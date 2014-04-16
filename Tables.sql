@@ -17,7 +17,8 @@ create table user (
        uid int not null primary key auto_increment,
        name varchar(50),
        username varchar(50),
-       password varchar(50)
+       password varchar(50),
+       picture varchar(50)
 )
 	ENGINE = InnoDB;
 
@@ -45,11 +46,11 @@ create table media (
        title varchar(50),
        dateadded datetime,
        characteristics varchar(200),
-       genre enum('action','comedy','adventure','documentary','drama','mystery','reality','sitcom','anime','children','classic','faith','foreign','horror','independent','musical','romance','scifi','fantasy','romance','thriller','hiphop','pop','classical','jazz','rap','country','alternative','faith','rock','blues','children','dance','electronic','easy listening','r&b','reggae','metal','soundtrack','foreign','indie','kpop','dubstep'),
-       length tinyint(10),
+       genre enum('action','comedy','adventure','documentary','drama','mystery','reality','sitcom','anime','children','classic','faith','foreign','horror','independent','musical','romance','scifi','fantasy','romance','thriller','hiphop','pop','classical','jazz','rap','country','alternative','faith','rock','blues','children','dance','electronic','easy listening','r&b','soul','reggae','metal','soundtrack','foreign','indie','kpop','dubstep'),
+       length varchar(20),
        preview varchar(200), -- will have a link to a video or stream of the media
        `type` enum('tv','movie','song','album'),
-       picture varchar(200), -- will have link to picture
+       picture varchar(50), -- will have link to picture
        albumid int,
        INDEX (albumid),
        foreign key (albumid) references media(mid) on delete restrict
@@ -95,8 +96,8 @@ create table reviews (
 )
 	ENGINE = InnoDB;
        
-insert into user values (1,'Ashley','athomas2','woohoo');
-insert into user values (2,'Sasha','alevy2','green');
+insert into user values (1,'Ashley','athomas2','woohoo',NULL);
+insert into user values (2,'Sasha','alevy2','green',NULL);
 insert into friends values (1,2);
 insert into person values (1,'Hugh Laurie','link');
 insert into media values (1,5,'Tomorrowland','1999-09-09 04:04:12','it is great','adventure',2,'video','movie','link',NULL);

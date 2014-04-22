@@ -74,7 +74,7 @@ create table likes (
        primary key (uid,mid),
        INDEX (uid),
        INDEX (mid),
-       dateadded datetime,
+       dateadded datetime, --when user added this to their liked table 
        foreign key (mid) references media(mid) on delete restrict,
        foreign key (uid) references user(uid) on delete restrict
 )

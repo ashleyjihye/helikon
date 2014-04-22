@@ -71,10 +71,10 @@ create table contribution (
 create table likes (
        uid int not null,
        mid int not null,
-       `type` enum('tv','movie','song','album'),
        primary key (uid,mid),
        INDEX (uid),
        INDEX (mid),
+       dateadded datetime,
        foreign key (mid) references media(mid) on delete restrict,
        foreign key (uid) references user(uid) on delete restrict
 )

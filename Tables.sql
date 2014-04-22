@@ -46,7 +46,7 @@ create table media (
        title varchar(50),
        dateadded datetime,
        characteristics varchar(200),
-       genre enum('action','comedy','adventure','documentary','drama','mystery','reality','sitcom','anime','children','classic','faith','foreign','horror','independent','musical','romance','scifi','fantasy','romance','thriller','hiphop','pop','classical','jazz','rap','country','alternative','faith','rock','blues','children','dance','electronic','easy listening','r&b','soul','reggae','metal','soundtrack','foreign','indie','kpop','dubstep'),
+       genre enum('action','comedy','adventure','documentary','drama','mystery','reality','sitcom','anime','children','classic','faith','foreign','horror','independent','musical','romance','scifi','fantasy','romance','thriller','medical','procedural','hiphop','pop','classical','jazz','rap','country','alternative','faith','rock','blues','children','dance','electronic','easy listening','r&b','soul','reggae','metal','soundtrack','foreign','indie','kpop','dubstep'),
        length varchar(20),
        preview varchar(200), -- will have a link to a video or stream of the media
        `type` enum('tv','movie','song','album'),

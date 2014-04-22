@@ -49,14 +49,14 @@ function displayMoviePage($dbh,$mid){
     $length = $row['length'];
   }
 
-    $htmlpage += getHTMLHead();
+//    $htmlpage += getHTMLHead(); 
 
     $htmlpage += "<h1>$title</h1>";
     $htmlpage += "<p>Genre: $genre --- Length: $length";
     $htmlpage += "<p>Rating: $rating stars";
 
 
-    $htmlpage += getHTMLFooter();
+//    $htmlpage += getHTMLFooter();
     return $htmlpage;
 
 }

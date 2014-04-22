@@ -44,7 +44,7 @@ function displayNames($values, $dbh) {
     $row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC);
     $name = $row['name'];
     $pid = $row['pid'];
-    echo "<a href= \"" . $page . "people/" . $pid . ".php\">$name</a><br><br>";
+    echo "<a href= \"" . $page . "person.php?pid=" . $pid . "\">$name</a><br><br>";
 
   }
   else {
@@ -52,7 +52,7 @@ function displayNames($values, $dbh) {
     while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
         $name = $row['name'];
         $pid = $row['pid'];
-        echo "<a href= \"" . $page . "people/" . $pid . ".php\">$name</a><br><br>";
+        echo "<a href= \"" . $page . "person.php?pid=" . $pid . "\">$name</a><br><br>";
     }
   }
 }
@@ -69,7 +69,7 @@ function displayUsers($values,$dbh){
     $row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC);
     $name = $row['name'];
     $uid = $row['uid'];
-    echo "<a href= \"" . $page . "users/" . $uid . ".php\">$name</a><br><br>";
+    echo "<a href= \"" . $page . "user.php?uid=" . $uid . "\">$name</a><br><br>";
 
   }
   else {
@@ -77,49 +77,12 @@ function displayUsers($values,$dbh){
     while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
         $name = $row['name'];
         $uid = $row['uid'];
-        echo "<a href= \"" . $page . "users/" . $uid . ".php\">$name</a><br><br>";
+        echo "<a href= \"" . $page . "user.php?uid=" . $uid . "\">$name</a><br><br>";
     }
   }
 
 
 }
-
- function displayPerson($values, $dbh) {
-    //query 1: actor stats
-      //name, birthdate from a given nm
-      $sql1 = "select name  from person where pid=?";
-
-      //execute the first query
-      $resultset1 = prepared_query($dbh, $sql1, $values);
-
-      //get name and birthdate
-      $detailrow = $resultset1->fetchRow(MDB2_FETCHMODE_ASSOC);
-      $name = $detailrow['name'];
- 
-
-      //write to html
-      echo "<h2>$name</h2><br>
-
-      Media:<br><br>";
-
-      //query 2: media
-      //
- 
-      $sql2 = "select title, mid, rating, type, genre from media where title like concat('%', ?, '%')";
-      //execute the second query
-      $resultset2 = prepared_query($dbh, $sql2, $values);
-
-      //display each movie
-      while($row = $resultset2->fetchRow(MDB2_FETCHMODE_ASSOC)) {
-        $title = $row['title'];
-        $rating = $row['rating'];
-	$genre = $row['genre'];
-
-
-       
-      }
- }
-
 
 function displayMovies($values, $dbh) {
   $sql = "select title, mid, rating, type, genre from media where title like concat('%', ?, '%') and type = 'movie'";
@@ -238,7 +201,7 @@ function displayTitle($mid, $dbh) {
     $length= $detailrow['length'];
     $type = $detailrow['type'];
 
-    echo "<a href= \"" . $page . "media/" . $mid . ".php\">$title ($genre)</a><br><br>";
+    echo "<a href= \"" . $page . "media.php?mid=" . $mid . "\">$title ($genre)</a><br><br>";
   }
 
 

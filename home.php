@@ -67,27 +67,31 @@ function displayFriends($dbh){
   $sql = "select uid from user where username = ?";
   $resultset = prepared_query($dbh, $sql, $_SESSION['username']);
   $row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC);
-  $uid = $row['uid'];
-  $sql = "select user.uid, name from user, friends where user.uid = friendid and friends.uid = ?";
-  $resultset = prepared_query($dbh, $sql, $uid);
+  $useruid = $row['uid'];
+  $sql = "select uid, friendid from friends where (uid = ? or friendid = ?)";
+  $resultset = prepared_query($dbh, $sql, array($useruid,$useruid,));
   $numpeople = $resultset->numRows();
-  
+  $thefriend;
   if ($numpeople == 1) {
     echo "<h3>1 friends found</h3>";
-    
-    $row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC);
-    $name = $row['name'];
-    $uid = $row['uid'];
-    echo "<a href= \"" . $page . "user.php?uid=" . $uid . "\">$name</a><br><br>";
-
   }
-  else {
+  else{    
     echo "<h3>$numpeople friends found</h3>";
-    while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
-        $name = $row['name'];
-        $uid = $row['uid'];
-        echo "<a href= \"" . $page . "user.php?uid=" . $uid . "\">$name</a><br><br>";
+  }
+  while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)){
+    $uid = $row['uid'];
+    $friendid = $row['friendid'];
+    if ($uid == $useruid){
+      $thefriend = $friendid;
     }
+    else{
+      $thefriend = $uid;
+    }
+    $sql1 = "select name from user where uid = ?";
+    $resultset1 = prepared_query($dbh, $sql1, $thefriend);
+    $row1 = $resultset1->fetchRow(MDB2_FETCHMODE_ASSOC); 
+    $name = $row1['name'];
+    echo "<a href= \"" . $page . "user.php?uid=" . $thefriend . "\">$name</a><br><br>";
   }
 }
 

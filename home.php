@@ -1,34 +1,14 @@
-<!doctype html>
-<html lang='en'>
-<head>
-<meta charset='utf-8'>   
-<meta name=author content="Ashley Thomas and Sasha Levy">
-<title>Home</title>
-</head>
-<body>
-<p><table border=1 cols="2" width="100%">
-  <tr><td valign="top" width="30%" bgcolor="6699FF">
-    <h2>Search Helikon</h2>
-    <form method="get" action="<?php echo $_SERVER['PHP_SELF'] ?>">
-      <select name="tables">
-        <option value="All">All</option>
-        <option value="Users">Users</option>
-        <option value="People">People</option>
-        <option value="Movies">Movies</option>
-      <option value="Albums">Albums</option>
-      <option value="Songs">Songs</option>
-      <option value="Movies">TVShows</option>
-  
-      </select><br>
-      <input type="text" name="sought" length="35"><br>
-      <input type="submit">
-    </form></td>
-    <td valign="top" width="70%">
-
 <?php
-  require_once("MDB2.php");
-  require_once("/home/cs304/public_html/php/MDB2-functions.php");
-  require_once('athomas2-dsn.inc');
+
+require_once("MDB2.php");
+require_once("/home/cs304/public_html/php/MDB2-functions.php");
+require_once("athomas2-dsn.inc");
+require_once("header.php");
+$dbh = db_connect($athomas2_dsn);
+
+  checkLogInStatus();
+  printPageTop("Home");
+  createNavBar($_SERVER['PHP_SELF']);
 
   $page = "http://cs.wellesley.edu/~athomas2/helikon/";
 
@@ -80,8 +60,35 @@ function displayUsers($values,$dbh){
         echo "<a href= \"" . $page . "user.php?uid=" . $uid . "\">$name</a><br><br>";
     }
   }
+}
 
+function displayFriends($dbh){
+  global $page;
+  $sql = "select uid from user where username = ?";
+  $resultset = prepared_query($dbh, $sql, $_SESSION['username']);
+  $row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC);
+  $uid = $row['uid'];
+  $sql = "select user.uid, name from user, friends where user.uid = friendid and friends.uid = ?";
+  $resultset = prepared_query($dbh, $sql, $uid);
+  $numpeople = $resultset->numRows();
+  
+  if ($numpeople == 1) {
+    echo "<h3>1 friends found</h3>";
+    
+    $row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC);
+    $name = $row['name'];
+    $uid = $row['uid'];
+    echo "<a href= \"" . $page . "user.php?uid=" . $uid . "\">$name</a><br><br>";
 
+  }
+  else {
+    echo "<h3>$numpeople friends found</h3>";
+    while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
+        $name = $row['name'];
+        $uid = $row['uid'];
+        echo "<a href= \"" . $page . "user.php?uid=" . $uid . "\">$name</a><br><br>";
+    }
+  }
 }
 
 function displayMovies($values, $dbh) {
@@ -204,13 +211,19 @@ function displayTitle($mid, $dbh) {
     echo "<a href= \"" . $page . "media.php?mid=" . $mid . "\">$title ($genre)</a><br><br>";
   }
 
-
-
-
  //--------MAIN--------
 
   // The following connects to the database, returning a database handle (dbh)
   $dbh = db_connect($athomas2_dsn);
+
+  if (isset($_GET['logout'])){
+    logOut();
+  }
+
+  else if (isset($_GET['friends'])){
+    displayFriends($dbh);
+  }
+
   if (isset($_GET['sought'])) {
     $table = $_GET['tables']; //returns which table the user wants to search from 
     $sought = $_GET['sought'];
@@ -219,22 +232,16 @@ function displayTitle($mid, $dbh) {
 
     } elseif ($table=="Users") {
       displayUsers($sought,$dbh);
-
     }
 
     elseif ($table=="Movies") { //search only within media
       displayMovies($sought, $dbh);
-
     
     } elseif ($table=="Albums") { //search only within media
       displayAlbums($sought, $dbh);
 
-  
     } elseif ($table=="TVShows") { //search only within media
       displayTVshows($sought, $dbh);
-
-  
-
 
     } elseif ($table=="Songs") { //search only within media
       displaySongs($sought, $dbh);

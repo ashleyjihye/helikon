@@ -5,6 +5,7 @@
 use athomas2_db;
 -- first, drop any existing tables
 
+drop table if exists ratings;
 drop table if exists reviews;
 drop table if exists contribution;
 drop table if exists likes;
@@ -18,13 +19,15 @@ create table user (
        name varchar(50),
        username varchar(50),
        password varchar(50),
-       picture varchar(50)
+       email varchar(50),
+       picture enum('y','n')
 )
 	ENGINE = InnoDB;
 
 create table friends (
        uid int not null,
        friendid int not null,
+       state enum('0','1'),
        primary key (uid,friendid),
        INDEX (uid),
        INDEX (friendid),
@@ -36,7 +39,7 @@ create table friends (
 create table person (
        pid int not null primary key auto_increment,
        name varchar(50),
-       picture varchar(50) -- picture will be a string that is a link to this person's picture
+       picture enum('y','n') -- picture will be a string that is a link to this person's picture
 )
 	ENGINE = InnoDB;
 
@@ -50,7 +53,7 @@ create table media (
        length varchar(20),
        preview varchar(200), -- will have a link to a video or stream of the media
        `type` enum('tv','movie','song','album'),
-       picture varchar(50), -- will have link to picture
+       picture enum('y','n'), -- will have link to picture
        albumid int,
        INDEX (albumid),
        foreign key (albumid) references media(mid) on delete restrict
@@ -74,18 +77,18 @@ create table likes (
        primary key (uid,mid),
        INDEX (uid),
        INDEX (mid),
-       dateadded datetime, --when user added this to their liked table 
+       dateadded datetime, -- when user added this to their liked table 
        foreign key (mid) references media(mid) on delete restrict,
        foreign key (uid) references user(uid) on delete restrict
 )
 	ENGINE = InnoDB;
 
 create table reviews (
-       rid int not null primary key,
+       rid int not null primary key auto_increment,
        uid int not null, -- user that wrote it
        mid int not null, -- what the user is commenting on
        dateadded datetime, -- when the user wrote it
-       initial int, -- what the original review the user is commenting on is (null if it is the original)
+       initial int, -- what the original review the user is commenting on is (0 if it is the original)
        comment varchar(1000), -- the actual review or comment
        INDEX (uid),
        INDEX (mid),
@@ -95,16 +98,32 @@ create table reviews (
        foreign key (mid) references media(mid) on delete restrict
 )
 	ENGINE = InnoDB;
+
+create table ratings (
+       uid int not null,
+       mid int not null,
+       rating int,
+       primary key (uid,mid),
+       INDEX (uid),
+       INDEX (mid),
+       foreign key (uid) references user(uid) on delete restrict,
+       foreign key (mid) references media(mid) on delete restrict
+)
+       ENGINE = InnoDB;
+
        
-insert into user values (1,'Ashley','athomas2','woohoo',NULL);
-insert into user values (2,'Sasha','alevy2','green',NULL);
-insert into friends values (1,2);
+insert into user values (1,'Ashley','athomas2','woohoo','athomas2@wellesley.edu',NULL);
+insert into user values (2,'Sasha','alevy2','green','alevy2@wellesley.edu',NULL);
 insert into person values (1,'Hugh Laurie','link');
 insert into media values (1,5,'Tomorrowland','1999-09-09 04:04:12','it is great','adventure',2,'video','movie','link',NULL);
-insert into likes values (1,1,'movie');
+insert into likes values (1,1,'0000-00-00');
 insert into contribution values (1,1);
 insert into media values (2,5,'Someone Like You','1999-09-09 04:04:12','adele!','alternative',3,'clip','song','link',NULL);
 insert into media values (3,5,'21','1999-09-09 04:04:12','adele!','alternative',5,'clip','album','link',NULL);
 update media set albumid = 3 where mid = 2;
-insert into reviews values (1,1,1,'123',NULL,'hello');
-insert into reviews values (2,1,1,'123',1,'hello yourself!');
+insert into reviews (uid,mid,dateadded,initial,comment) values (1,1,'2014-04-14',1,'hello');
+insert into reviews (uid,mid,dateadded,initial,comment) values (1,1,'2014-04-15',1,'hello yourself!');
+insert into reviews (uid,mid,dateadded,initial,comment) values (2,1,'2014-04-16',1,'hello yourself!');
+insert into reviews (uid,mid,dateadded,initial,comment) values (1,1,'2014-04-17',4,'hello yourself!');
+insert into reviews (uid,mid,dateadded,initial,comment) values (1,1,'2014-04-18',1,'hello yourself!');
+insert into reviews (uid,mid,dateadded,initial,comment) values (1,1,'2014-04-19',4,'hello yourself!');

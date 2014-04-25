@@ -13,22 +13,19 @@
     the songs being added must be new songs
     contributions will be made for the album and each song
 
-  -->
- 
-  <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Add Data Form</title>
+ -->
 
-    <!-- Bootstrap -->
-    <link href="css/bootstrap.min.css" rel="stylesheet">
+<?php
 
-  </head>
-  <body>
-  
-  <script src="https://code.jquery.com/jquery.js"></script>
+require_once("MDB2.php");
+require_once("/home/cs304/public_html/php/MDB2-functions.php");
+require_once("athomas2-dsn.inc");
+require_once("header.php");
+
+  checkLogInStatus();   
+  printPageTop("Add Data");
+  createNavBar("home.php");
+?>
 
   <script>
   $(document).ready(function (){
@@ -63,6 +60,7 @@
 });
 
 </script>
+
   <h2 class= "title" >Add Data to the Database </h2>
   <div id="form">
   <form method="post" action="<?php echo $_SERVER['PHP_SELF']?>">
@@ -169,10 +167,6 @@ $findalbum = "select * from media where title = ? and type = 'album'";
 $findperson = "select * from person where name = ?";
 $findcontribution = "select * from contribution where pid = ? and mid = ?";
 $findsongs = "select * from media where albumid = ?";
-
-
-$results = displayMoviePage($dbh,1);
-echo $results;
 
 if (empty($_REQUEST)){
   echo "Please enter either a person or a piece of media to add to the database!";
@@ -459,7 +453,5 @@ else if (!empty($_REQUEST['type'])){
 }
 ?>
   
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-  <script src="js/bootstrap.min.js"></script>
   </body>
   </html>

@@ -127,7 +127,7 @@ echo '<nav class="navbar navbar-default" role="navigation">
         <option value="Movies">Movies</option>
       <option value="Albums">Albums</option>
       <option value="Songs">Songs</option>
-      <option value="Movies">TVShows</option>
+      <option value="TVShows">TV Shows</option>
       </select>
 
           <input type="text" class="form-control" name="sought" placeholder="Search">
@@ -159,6 +159,7 @@ function createStars($mid){
    <label><input id="rating-2" name="rating" type="radio" value="2"/>2 Stars</label>
    <label><input id="rating-3" name="rating" type="radio" value="3"/>3 Stars</label>
    <label><input id="rating-4" name="rating" type="radio" value="4"/>4 Stars</label>
+   <label><input id="rating-5" name="rating" type="radio" value="5"/>5 Stars</label>
    <input type="submit" value="Submit Rating">
   </div><br></form>';
 }

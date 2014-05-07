@@ -65,21 +65,56 @@ require_once("header.php");
   <div id="form">
   <form method="post" action="<?php echo $_SERVER['PHP_SELF']?>">
   <select name="type" id="type">
-  <option selected="selected" value="person">Person
-  <option value="song">Song
+  <option selected="selected" value="song">Song
   <option value="mediaalbum">Album
   <option value="moviesandtv">Movies/TV
+  <option value="person">Actor
   </select>
+  <br><br>
   <div id="person">
   <p>Name <input type="text" name="name">
 
   <p>Media:
-    <p><input type="text" name="media1">
-    <p><input type="text" name="media2">
-    <p><input type="text" name="media3">
-    <p><input type="text" name="media4">
-    <p><input type="text" name="media5">
-    <p><input type="text" name="media6">
+
+  <table style="padding-bottom:20px">
+  <tr><th>Title</th><th>Type</th></tr>
+    <tr><td><input type="text" name="media1"></td>
+      <td><select name="personmediatype1" id="personmediatype">
+      <option selected="selected" value="">None
+      <option value="movie">Movie
+      <option value="tv">TV
+      </select></td></tr>
+    <tr><td><input type="text" name="media2"></td>
+      <td><select name="personmediatype2" id="personmediatype">
+      <option selected="selected" value="">None
+      <option value="movie">Movie
+      <option value="tv">TV
+      </select></td></tr>
+    <tr><td><input type="text" name="media3"></td>
+      <td><select name="personmediatype3" id="personmediatype">
+      <option selected="selected" value="">None
+      <option value="movie">Movie
+      <option value="tv">TV
+      </select></td></tr>
+    <tr><td><input type="text" name="media4"></td>
+      <td><select name="personmediatype4" id="personmediatype">
+      <option selected="selected" value="">None
+      <option value="movie">Movie
+      <option value="tv">TV
+      </select></td></tr>
+    <tr><td><p><input type="text" name="media5"></td>
+      <td><select name="personmediatype5" id="personmediatype">
+      <option selected="selected" value="">None
+      <option value="movie">Movie
+      <option value="tv">TV
+      </select></td></tr>
+    <tr><td><p><input type="text" name="media6"></td>
+      <td><select name="personmediatype6" id="personmediatype">
+      <option selected="selected" value="">None
+      <option value="movie">Movie
+      <option value="tv">TV
+      </select></td></tr>
+    </table>
 
   </div>
 
@@ -155,18 +190,31 @@ require_once("functions.php");
 
 require_once('athomas2-dsn.inc');
 
+function getUid($dbh, $username) {
+  $sql = "select uid from user where username = ?";
+  $resultset = prepared_query($dbh, $sql, $username);
+  $detailrow = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC);
+  $uid = $detailrow['uid'];
+  return $uid;
+}
 // The following connects to the database, returning a database handle (dbh)
 
 $dbh = db_connect($athomas2_dsn);
-$person = "Insert into person (name) values (?)";
-$media = "Insert into media (title, genre, length, type, albumid, dateadded) values (?,?,?,?,?,?)";
+$person = "Insert into person (name,addedby) values (?,?)";
+$media = "Insert into media (title, genre, length, type, albumid, dateadded,addedby) values (?,?,?,?,?,?,?)";
 $contribution = "Insert into contribution values (?,?)";
 $findmedia = "Select * from media where title = ?";
+$findmediawithtype = "select * from media where title = ? and type = ?";
+$findmediausingmid = "select * from media where mid = ?";
 $findsongalbum = "Select * from media where title = ? and albumid = ?";
 $findalbum = "select * from media where title = ? and type = 'album'";
 $findperson = "select * from person where name = ?";
 $findcontribution = "select * from contribution where pid = ? and mid = ?";
 $findsongs = "select * from media where albumid = ?";
+$findmediausingpid = "select mid, pid, genre from media inner join contribution using (mid) where title = ? and type = ? and pid = ?";
+$findmediausingname = "select mid, pid from media inner join contribution using (mid) inner join person using (pid) where title = ? and type = ? and name = ?";
+
+$uid = getUid($dbh,$_SESSION['username']);
 
 if (empty($_REQUEST)){
   echo "Please enter either a person or a piece of media to add to the database!";
@@ -187,20 +235,20 @@ else if (!empty($_REQUEST['type'])){
       echo "Please enter a valid name for the person.";
     }
     else{
-      $name = $_REQUEST['name'];
+      $name = htmlspecialchars($_REQUEST['name']);
       $values = array($name);
       $personexists = prepared_query($dbh,$findperson,$values);
       $numrows = $personexists->numRows();
       if ($numrows != 0){
-        echo "<p>There's already someone with that name.";
+        echo "<p>There's already someone named " . $name .".";
         $getperson = prepared_query($dbh,$findperson,array($name));
         while($row3 = $getperson->fetchRow(MDB2_FETCHMODE_ASSOC)) {
         $personid = $row3['pid'];
         }
       }
       else {
-        $addperson = prepared_query($dbh,$person,$values);
-        echo "<p>Successfully added that person to the database.";
+        $addperson = prepared_query($dbh,$person,array($name,$uid));
+        echo "<p>Successfully added " . $name . " to the database.";
         $getpersonid = query($dbh,"select last_insert_id()");
         while($row3 = $getpersonid->fetchRow(MDB2_FETCHMODE_ASSOC)) {
         $personid = $row3['last_insert_id()'];
@@ -209,11 +257,20 @@ else if (!empty($_REQUEST['type'])){
 
       $mediacount = 1;
       while ($mediacount <= 6 and $_REQUEST['media' . $mediacount] != ""){
-        $currentmedia = $_REQUEST['media' . $mediacount];
-        $checkmedia = prepared_query($dbh,$findmedia,array($currentmedia));
+        $currentmedia = htmlspecialchars($_REQUEST['media' . $mediacount]);
+        $currenttype = htmlspecialchars($_REQUEST['personmediatype' . $mediacount]);
+        if ($currenttype == ""){
+          $checkmedia = prepared_query($dbh,$findmedia,array($currentmedia));
+        }
+        else{
+          $checkmedia = prepared_query($dbh,$findmediawithtype,array($currentmedia,$currenttype));
+        }
         $numrows2 = $checkmedia->numRows();
         if ($numrows2 == 0){
-          echo "Sorry, media in slot " . $mediacount . " doesn't exist. Please add the media separately first.";
+          echo "Sorry, the media \"" . $currentmedia . "\" doesn't exist. Please add the media separately first.";
+        }
+        else if ($numrows2 != 1){
+          echo "Sorry, searching for \"" . $currentmedia . "\" returned more than one result. Please enter more information about the piece of media.";
         }
         else {
           while($row3 = $checkmedia->fetchRow(MDB2_FETCHMODE_ASSOC)) {
@@ -223,7 +280,7 @@ else if (!empty($_REQUEST['type'])){
           $numrows = $contributionexists->numRows();
           if ($numrows == 0){
             $addactorcontribution = prepared_query($dbh,$contribution,array($personid,$mediaid));
-            echo "Successfully added media in spot" . $mediacount . "<p>";
+            echo "Successfully added \"" . $currentmedia . "\" to the database.<p>";
           }
         }
         $mediacount++;
@@ -232,60 +289,66 @@ else if (!empty($_REQUEST['type'])){
   }
   
   else if ($type == 'moviesandtv'){
-    if ($_REQUEST['title'] == ""){
+    if (htmlspecialchars($_REQUEST['title']) == ""){
       echo "Please enter a valid title for the piece of media you want to add.";
     }
     else{
-      $title = $_REQUEST['title'];
-      $values1 = array($title);
-      $mediaexists = prepared_query($dbh,$findmedia,$values1);
+      $title = htmlspecialchars($_REQUEST['title']);
+      $type = htmlspecialchars($_REQUEST['mediatype']);
+      $values1 = array($title,$type);
+      $mediaexists = prepared_query($dbh,$findmediawithtype,$values1);
       $numrows1 = $mediaexists->numRows();
       if ($numrows1 == 0){
-        $genre = $_REQUEST['genre'];
-        $type = $_REQUEST['mediatype'];
-        $length = $_REQUEST['length'];
+        $genre = htmlspecialchars($_REQUEST['genre']);
+        $length = htmlspecialchars($_REQUEST['length']);
         $datetime = query($dbh,"Select now()");
         while ($row1 = $datetime->fetchRow(MDB2_FETCHMODE_ASSOC)){
           $thetime = $row1['now()'];
         }
-        $values3 = array($title,$genre,$length,$type,NULL,$thetime);
+        $values3 = array($title,$genre,$length,$type,NULL,$thetime,$uid);
         $addmedia = prepared_query($dbh,$media,$values3);
-        echo "<p>Successfully added that piece of media to the database.";
+        echo "<p>Successfully added \"" . $title . "\" to the database.";
         $getmediaid = query($dbh,"select last_insert_id()");
         while($row3 = $getmediaid->fetchRow(MDB2_FETCHMODE_ASSOC)) {
         $mediaid = $row3['last_insert_id()'];
         }
       }
       else {
-        $getmedia = prepared_query($dbh,$findmedia,array($title));
+        $getmedia = prepared_query($dbh,$findmediawithtype,array($title,$type));
         while($row3 = $getmedia->fetchRow(MDB2_FETCHMODE_ASSOC)) {
         $mediaid = $row3['mid'];
         }
+        echo "<p>The media \"" . $title . "\" already existed.";
       }
 
       $actorcount = 1;
-      while ($actorcount <= 6 and $_REQUEST['mediaactor' . $actorcount] != ""){
-        $currentactor = $_REQUEST['mediaactor' . $actorcount];
+      while ($actorcount <= 6 and htmlspecialchars($_REQUEST['mediaactor' . $actorcount]) != ""){
+        $currentactor = htmlspecialchars($_REQUEST['mediaactor' . $actorcount]);
 
         $checkactor = prepared_query($dbh,$findperson,array($currentactor));
         $numrows2 = $checkactor->numRows();
         if ($numrows2 == 0){
-          $addperson = prepared_query($dbh,$person,array($currentactor));
+          $addperson = prepared_query($dbh,$person,array($currentactor,$uid));
           $getpersonid = query($dbh,"select last_insert_id()");
           while($row3 = $getpersonid->fetchRow(MDB2_FETCHMODE_ASSOC)) {
           $personid = $row3['last_insert_id()'];
           }
+          echo "<p>Successfully added " . $currentactor . " to the database.<p>";
         }
         else {
           while($row3 = $checkactor->fetchRow(MDB2_FETCHMODE_ASSOC)) {
           $personid = $row3['pid'];
           }
+          echo "<p>" . $currentactor . " is already in the database.<p>";
         }
         $contributionexists = prepared_query($dbh,$findcontribution,array($personid,$mediaid));
         $numrows = $contributionexists->numRows();
         if ($numrows == 0){
           $addactorcontribution = prepared_query($dbh,$contribution,array($personid,$mediaid));
-          echo "Successfully added person in spot" . $actorcount . "<p>";
+          echo "<p>Successfully added \"" . $title . "\" and " . $currentactor . " together to the database.<p>";
+        }
+        else{
+
         }
         $actorcount++;
       }
@@ -295,7 +358,7 @@ else if (!empty($_REQUEST['type'])){
   //adds a song with an album that may or may not exist and a person that may or may not exist.
   //doesn't allow a song with an associated album have same titles for two different people.
   else if ($type == "song"){
-    if ($_REQUEST['songartist'] == ""){
+    if (htmlspecialchars($_REQUEST['songartist']) == ""){
       echo "Sorry, please enter a valid artist.";
     }
     else{     
@@ -304,45 +367,49 @@ else if (!empty($_REQUEST['type'])){
       while ($row1 = $datetime->fetchRow(MDB2_FETCHMODE_ASSOC)){
         $thetime = $row1['now()'];
       }
-      $title = $_REQUEST['songtitle'];
-      $genre = $_REQUEST['songgenre'];
-      $length = $_REQUEST['songlength'];
-      $artist = $_REQUEST['songartist'];
+      $title = htmlspecialchars($_REQUEST['songtitle']);
+      $genre = htmlspecialchars($_REQUEST['songgenre']);
+      $length = htmlspecialchars($_REQUEST['songlength']);
+      $artist = htmlspecialchars($_REQUEST['songartist']);
       $albumid = NULL;
 
       //check to see if artist is already in database; if not, add them
       $checkartist = prepared_query($dbh,$findperson,array($artist));
       $numrows2 = $checkartist->numRows();
       if ($numrows2 == 0){
-        $addperson = prepared_query($dbh,$person,array($artist));
+        $addperson = prepared_query($dbh,$person,array($artist,$uid));
         $getpersonid = query($dbh,"select last_insert_id()");
         while($row3 = $getpersonid->fetchRow(MDB2_FETCHMODE_ASSOC)) {
         $personid = $row3['last_insert_id()'];
         }
+        echo "<p>Successfully added " . $artist . " to the database.<p>";
       }
       else {
         while($row3 = $checkartist->fetchRow(MDB2_FETCHMODE_ASSOC)) {
         $personid = $row3['pid'];
         }
+        echo "<p>" . $artist . " is already in the database.<p>";
       }
 
       //check to see if album is already in database; if not, add it and add contribution between artist and album
-      if (isset($_REQUEST['songalbum'])){
-        $album = $_REQUEST['songalbum'];
-        $values2 = array($album);
-        $albumexists = prepared_query($dbh,$findalbum,$values2);
+      if (isset($_REQUEST['songalbum']) && htmlspecialchars($_REQUEST['songalbum']) != ""){
+        $album = htmlspecialchars($_REQUEST['songalbum']);
+        $values2 = array($album,"album",$personid);
+        $albumexists = prepared_query($dbh,$findmediausingpid,$values2);
         if ($albumexists->numRows() != 0){
           while($row = $albumexists->fetchRow(MDB2_FETCHMODE_ASSOC)) {
             $albumid = $row['mid'];
           }
+          echo "<p>\"" . $album . "\" is already in the database.<p>";
         }
         else{
-          $values2 = array($album,$genre,$length,"album",NULL,$thetime);
+          $values2 = array($album,$genre,$length,"album",NULL,$thetime,$uid);
           $addalbum = prepared_query($dbh,$media,$values2);
           $getalbumid = query($dbh,"select last_insert_id()");
           while($row3 = $getalbumid->fetchRow(MDB2_FETCHMODE_ASSOC)) {
           $albumid = $row3['last_insert_id()'];
           }
+          echo "<p>Successfully added \"" . $album . "\" to the database.<p>";
 
           $contributionexists = prepared_query($dbh,$findcontribution,array($personid,$albumid));
           $numrows = $contributionexists->numRows();
@@ -353,16 +420,16 @@ else if (!empty($_REQUEST['type'])){
         }
       }
 
-      //check to see if album and song pair exist. if not, add song, and add contribution to person and song.
-      $songalbumexists = prepared_query($dbh,$findsongalbum,array($title,$albumid));
-      $numrows1 = $songalbumexists->numRows();
+      //check to see if artist and song pair exist. if not, add song, and add contribution to person and song.
+      $songartistexists = prepared_query($dbh,$findmediausingpid,array($title,"song",$personid));
+      $numrows1 = $songartistexists->numRows();
       if ($numrows1 != 0){
-        echo "<p>Sorry, there's already a song with that title and associated album.";
+        echo "<p>Sorry, there's already a song \"" . $title . "\" by " . $artist . " artist.";
       }
       else{
-        $values3 = array($title,$genre,$length,$type,$albumid,$thetime);
+        $values3 = array($title,$genre,$length,$type,$albumid,$thetime,$uid);
         $addmedia = prepared_query($dbh,$media,$values3);
-        echo "<p>Successfully added this song to the database.";
+        echo "<p>Successfully added \"" . $title . "\" to the database.<p>";
         $getsongid = query($dbh,"select last_insert_id()");
         while($row3 = $getsongid->fetchRow(MDB2_FETCHMODE_ASSOC)) {
         $songid = $row3['last_insert_id()'];
@@ -378,7 +445,7 @@ else if (!empty($_REQUEST['type'])){
   }
 
   else if ($type == 'mediaalbum'){
-    if ($_REQUEST['albumtitle'] == "" or $_REQUEST['albumartist'] == ""){
+    if (htmlspecialchars($_REQUEST['albumtitle']) == "" or htmlspecialchars($_REQUEST['albumartist']) == ""){
       echo "Please enter a valid album title and album artist.";
     }
     else{
@@ -386,47 +453,54 @@ else if (!empty($_REQUEST['type'])){
       while ($row1 = $datetime->fetchRow(MDB2_FETCHMODE_ASSOC)){
         $thetime = $row1['now()'];
       }
-      $artist = $_REQUEST['albumartist'];
+      $artist = htmlspecialchars($_REQUEST['albumartist']);
       $checkartist = prepared_query($dbh,$findperson,array($artist));
       $numrows2 = $checkartist->numRows();
       if ($numrows2 == 0){
-        $addperson = prepared_query($dbh,$person,array($artist));
+        $addperson = prepared_query($dbh,$person,array($artist,$uid));
         $getpersonid = query($dbh,"select last_insert_id()");
         while($row3 = $getpersonid->fetchRow(MDB2_FETCHMODE_ASSOC)) {
         $personid = $row3['last_insert_id()'];
         }
+        echo "<p>Successfully added " . $artist . " to the database.<p>";
       }
       else {
         while($row3 = $checkartist->fetchRow(MDB2_FETCHMODE_ASSOC)) {
         $personid = $row3['pid'];
         }
+        echo "<p>" . $artist . " is already in the database.<p>";
       }
-      $title = $_REQUEST['albumtitle'];
-      $values7 = array($title);
-      $albumexists = prepared_query($dbh,$findalbum,$values7);
+      $title = htmlspecialchars($_REQUEST['albumtitle']);
+      $values7 = array($title,"album",$personid);
+      $albumexists = prepared_query($dbh,$findmediausingpid,$values7);
       $numrows1 = $albumexists->numRows();
       if ($numrows1 != 0){
-        echo "<p>There's already an album with that title.";
+        echo "<p>\"" . $title . "\" is already in the database.<p>";
         while($row3 = $albumexists->fetchRow(MDB2_FETCHMODE_ASSOC)) {
           $genre = $row3['genre'];
+          $albumid = $row3['mid'];
         }
       }
       else {
-        $genre = $_REQUEST['albumgenre'];
+        $genre = htmlspecialchars($_REQUEST['albumgenre']);
         $type = "album";
-        $length = $_REQUEST['albumlength'];
+        $length = htmlspecialchars($_REQUEST['albumlength']);
         $albumid = NULL;
-        $values3 = array($title,$genre,$length,$type,$albumid,$thetime);
+        $values3 = array($title,$genre,$length,$type,$albumid,$thetime,$uid);
         $addmedia = prepared_query($dbh,$media,$values3);
-        echo "<p>Successfully added the album to the database.";
+        echo "<p>Successfully added \"" . $title . "\" to the database.<p>";
+        $getalbumid = query($dbh,"select last_insert_id()");
+        while($row3 = $getalbumid->fetchRow(MDB2_FETCHMODE_ASSOC)) {
+          $albumid = $row3['last_insert_id()'];
+        }
+        $values7 = array($albumid);
+        $albumexists = prepared_query($dbh,$findmediausingmid,$values7);
+        $numrows1 = $albumexists->numRows();
+        while($row3 = $albumexists->fetchRow(MDB2_FETCHMODE_ASSOC)) {
+          $genre = $row3['genre'];
+         }
       }      
-      $values7 = array($title);
-      $albumexists = prepared_query($dbh,$findalbum,$values7);
-      $numrows1 = $albumexists->numRows();
-      while($row3 = $albumexists->fetchRow(MDB2_FETCHMODE_ASSOC)) {
-        $genre = $row3['genre'];
-        $albumid = $row3['mid'];
-      }
+
       $contributionexists = prepared_query($dbh,$findcontribution,array($personid,$albumid));
       $numrows = $contributionexists->numRows();
       if ($numrows == 0){
@@ -434,19 +508,28 @@ else if (!empty($_REQUEST['type'])){
       }
       $songcount = 1;
       while ($songcount <= 14 and $_REQUEST['song' . $songcount] != ""){
-
-        $values6 = array($_REQUEST['song' . $songcount],$genre,$_REQUEST['length' . $songcount],"song",$albumid,$thetime);
-        $addmedia = prepared_query($dbh,$media,$values6);
-        $getsongid = query($dbh,"select last_insert_id()");
-        while($row3 = $getsongid->fetchRow(MDB2_FETCHMODE_ASSOC)) {
-        $songid = $row3['last_insert_id()'];
+        $title = htmlspecialchars($_REQUEST['song' . $songcount]);
+        $length = htmlspecialchars($_REQUEST['length' . $songcount]);
+        $songartistexists = prepared_query($dbh,$findmediausingpid,array($title,"song",$personid));
+        $numrows1 = $songartistexists->numRows();
+        if ($numrows1 != 0){
+          echo "<p>Sorry, there's already a song \"" . $title . "\" by " . $artist . " artist.";
         }
-        $contributionexists = prepared_query($dbh,$findcontribution,array($personid,$songid));
-        $numrows = $contributionexists->numRows();
-        if ($numrows == 0){
-         $addsongcontribution = prepared_query($dbh,$contribution,array($personid,$songid));
+        else{
+          $values3 = array($title,$genre,$length,"song",$albumid,$thetime,$uid);
+          $addmedia = prepared_query($dbh,$media,$values3);
+          echo "<p>Successfully added \"" . $title . "\" to the database.<p>";
+          $getsongid = query($dbh,"select last_insert_id()");
+          while($row3 = $getsongid->fetchRow(MDB2_FETCHMODE_ASSOC)) {
+          $songid = $row3['last_insert_id()'];
+          }
+          $contributionexists = prepared_query($dbh,$findcontribution,array($personid,$songid));
+          $numrows = $contributionexists->numRows();
+          if ($numrows == 0){
+            $addsongcontribution = prepared_query($dbh,$contribution,array($personid,$songid));
+          }
         }
-        $songcount++;
+          $songcount++;
       }
     }
   }

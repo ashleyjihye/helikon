@@ -1,3 +1,5 @@
+
+
 <?php
    
 require_once("MDB2.php");
@@ -7,6 +9,59 @@ require_once("header.php");
 
 $page = $_SERVER['PHP_SELF'];
 $dbh = db_connect($athomas2_dsn);
+
+function printJquery() {
+echo '<script>
+  $(document).ready(function (){
+    $(".comment-reply").hover(function(){
+       $(this).css("color","pink");},function(){
+        $(this).css("color","blue");
+       }
+    );
+
+     $("#commentform").submit(function(e){
+      e.preventDefault();
+      data = $("#commentform").serialize();
+      var actionurl = e.currentTarget.action;
+      $.ajax({
+        type: "POST",
+        url: actionurl,
+        dataType = "json",
+        data = data,
+        success: function(data){
+          alert("Data Saved");
+          $(this).closest(".media-body").append("It worked!");
+        }
+      });
+    });
+
+
+  $(".replyform textarea")
+      .keypress(function (e) {
+        if (e.keyCode == 13  && !e.shiftKey){
+          $(this).closest("form")
+            .submit();
+        }
+      });
+
+    $(".replyform").hide();
+    $(".comment-reply").click(
+      function() {
+        $(".replyform").hide();
+        $(this).closest(".media-body")
+        .find(".replyform")
+        .first()
+        .show();
+        
+        $(this).closest(".media-body")
+        .find(".replyform")
+        .first().find("#comment").focus();
+      });
+  });
+
+
+</script>';
+}
 
 function getMedia($values, $dbh) {
    $sql = "select * from media where mid=?";
@@ -136,8 +191,8 @@ function addMedia($dbh, $mid, $uid){
     query($dbh,$sql);
 }
 
-function showComments($dbh, $mid){
-  $sql = "select rid, uid, name, comment, initial, dateadded from reviews inner join user using (uid) where mid = ? order by initial";
+function showComments($page, $dbh, $mid){
+  $sql = "select rid, uid, name, comment, initial, dateadded from reviews inner join user using (uid) where mid = ? order by initial, dateadded";
   $resultset = prepared_query($dbh,$sql,$mid);
   $lastinitial = 0;
   $counter = 0;
@@ -153,7 +208,7 @@ function showComments($dbh, $mid){
     if ($counter == 1){
       $lastinitial = $initial;
     }
-    if ($rid == $initial){
+ if ($rid == $initial){
       if ($lastinitial != $initial){
         echo '</div></div>';
         $lastinitial = $initial;
@@ -161,21 +216,34 @@ function showComments($dbh, $mid){
       echo '<div class="media"><a class="pull-left" href="user.php?uid=' . $uid . '">
             <img class="media-object" src="adele.jpg" alt="Media Object"></a>
             <div class="media-body">
-            <h4 class="media-heading">' . $name . '</h4> at ' . $time . '<br>' . $comment;
+            <h4 class="media-heading">' . $name . '</h4> at ' . $time . '<br>' . $comment . '
+            <br><span class="comment-reply" style="color:blue;" >Reply</span>
+            <br><div class="replyform"><form id="commentform" method="get" action="' . $page . '">
+            <input type="hidden" name="mid" value="' . $mid . '">
+            <input type="hidden" name="rid" value="' . $rid . '">
+            <textarea rows="1" cols="50" id="comment" name="comment"></textarea><br>
+            <input type="hidden" name="addcomment">
+            </form></div><br>';
     }
     else{
       echo '<div class="media"><a class="pull-left" href="user.php?uid=$uid">
             <img class="media-object" src="adele.jpg" alt="Media Object"></a>
             <div class="media-body">
-            <h4 class="media-heading">' . $name . '</h4> at ' . $time . '<br>' . $comment . '</div></div>';
+            <h4 class="media-heading">' . $name . '</h4> at ' . $time . '<br>' . $comment . '
+            <br><span class="comment-reply" style="color:blue"; >Reply</span>
+            <br><div class="replyform"><form id="commentform" method="get" action="' . $page . '">
+            <input type="hidden" name="mid" value="' . $mid . '">
+            <input type="hidden" name="rid" value="' . $rid . '">
+            <textarea rows="1" cols="50" id="comment" name="comment"></textarea><br>
+            <input type="hidden" name="addcomment">
+            </form></div><br></div></div>';
     }
-
   }
   echo "</div><br><br>";
 }
 
 function commentForm($page, $mid){
-  echo '<form method="post" action="' . $page . '">
+  echo '<form id="commentform" method="get" action="' . $page . '">
       <input type="hidden" name="mid" value="' . $mid . '">
       <textarea rows="4" cols="50" name="comment"></textarea><br>
     <input type="hidden" name="addcomment">
@@ -183,24 +251,27 @@ function commentForm($page, $mid){
   </form><br>';
 }
 
-function addComment($dbh, $mid, $uid, $comment){
+function addComment($dbh, $mid, $uid, $parentrid, $comment){
   $datetime = query($dbh,"Select now()");
   while ($row1 = $datetime->fetchRow(MDB2_FETCHMODE_ASSOC)){
     $thetime = $row1['now()'];
   }
- //  $values = array($uid,$mid,);
-   //$sql = "select * from likes where uid = ? and mid = ?";
- //  $resultset = prepared_query($dbh,$sql,$values);
- //  $numResults = $resultset->numRows();
- //  if ($numResults == 0){
-     $sql = "select rid from reviews order by rid desc limit 1";
-     $resultset = query($dbh,$sql);
-     $row1 = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC);
-     $rid = $row1['rid'] + 1;
-     $values = array($uid,$mid,$thetime,$rid,$comment);
-     $sql = "insert into reviews (uid,mid,dateadded,initial,comment) values (?,?,?,?,?)";
-     prepared_statement($dbh, $sql, $values);
- //}
+   $sql = "select rid from reviews order by rid desc limit 1";
+   $resultset = query($dbh,$sql);
+   $row1 = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC);
+   $rid = $row1['rid'] + 1;
+   if ($parentrid == null){
+    $parentrid = $rid;
+   }
+   else{
+     $sql = "select initial from reviews where rid = ?";
+     $resultset = prepared_query($dbh,$sql,array($parentrid));
+     $row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC);
+     $parentrid = $row['initial'];
+   }
+   $values = array($uid,$mid,$thetime,$parentrid,$comment);
+   $sql = "insert into reviews (uid,mid,dateadded,initial,comment) values (?,?,?,?,?)";
+   prepared_statement($dbh, $sql, $values);
 }
 
 function addRating($dbh,$uid,$mid,$rating){
@@ -248,6 +319,7 @@ if (isset($_REQUEST['mid'])){
     $rating = $mediaarray['rating'];
 
     printPageTop("$title");
+    printJquery();
     createNavBar("home.php");
     echo "<h1>$title</h1>";
 
@@ -291,9 +363,15 @@ if (isset($_REQUEST['mid'])){
 
     if (isset($_REQUEST['addcomment'])){
       $comment = $_REQUEST['comment'];
-      addComment($dbh, $pagemid, $uid, $comment);
+      if (isset($_REQUEST['rid'])){
+        $parentrid = $_REQUEST['rid'];
+      }
+      else{
+        $parentrid = null;
+      }
+      addComment($dbh, $pagemid, $uid, $parentrid, $comment);
     }
-    showComments($dbh,$pagemid);
+    showComments($page,$dbh,$pagemid);
     commentForm($page, $pagemid);
   }
 }

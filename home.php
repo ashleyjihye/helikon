@@ -14,61 +14,55 @@ $dbh = db_connect($athomas2_dsn);
 
 function displayNames($values, $dbh) {
   global $page;
-  $sql = "select * from person where name like concat ('%', ?, '%')";
+  $sql = "select * from person where name like concat ('%', ?, '%') order by name";
   $resultset = prepared_query($dbh, $sql, $values);
   $numpeople = $resultset->numRows();
-  
+  echo "<table border='1'> <tr> <th>Name</th></tr>";
   if ($numpeople == 1) {
     echo "<h3>1 name found</h3>";
-    
-    $row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC);
-    $name = $row['name'];
-    $pid = $row['pid'];
-    echo "<a href= \"" . $page . "person.php?pid=" . $pid . "\">$name</a><br><br>";
-
   }
   else {
     echo "<h3>$numpeople names found</h3>";
+  }
     while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
         $name = $row['name'];
         $pid = $row['pid'];
-        echo "<a href= \"" . $page . "person.php?pid=" . $pid . "\">$name</a><br><br>";
+        echo "<tr><td><a href= \"" . $page . "person.php?pid=" . $pid . "\">$name</a></td></tr>";
+    
     }
-  }
+    echo "</table>";
 }
 
 function displayUsers($values,$dbh){
   global $page;
-  $sql = "select * from user where name like concat ('%', ?, '%')";
+  $sql = "select * from user where name like concat ('%', ?, '%') order by name";
   $resultset = prepared_query($dbh, $sql, $values);
+  echo "<table border='1'><tr><th>Name</th></tr>";
+ 
   $numpeople = $resultset->numRows();
-  
-  if ($numpeople == 1) {
+  if($numpeople==1) {
     echo "<h3>1 user found</h3>";
-    
-    $row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC);
-    $name = $row['name'];
-    $uid = $row['uid'];
-    echo "<a href= \"" . $page . "user.php?uid=" . $uid . "\">$name</a><br><br>";
-
   }
   else {
     echo "<h3>$numpeople users found</h3>";
-    while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
-        $name = $row['name'];
-        $uid = $row['uid'];
-        echo "<a href= \"" . $page . "user.php?uid=" . $uid . "\">$name</a><br><br>";
-    }
   }
+
+  while($row= $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
+    $name = $row['name'];
+    $uid=$row['uid'];
+    echo "<tr><td><a href= \"" . $page . "user.php?uid=" . $uid . "\">$name</a></td></tr>";
+  }
+  echo "</table>";
 }
+  
 
 function displayFriends($dbh){
   global $page;
-  $sql = "select uid from user where username = ?";
+  $sql = "select uid from user where username = ? order by name";
   $resultset = prepared_query($dbh, $sql, $_SESSION['username']);
   $row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC);
   $useruid = $row['uid'];
-  $sql = "select uid, friendid from friends where (uid = ? or friendid = ?)";
+  $sql = "select uid, friendid from friends where (uid = ? or friendid = ?) and state = '1'";
   $resultset = prepared_query($dbh, $sql, array($useruid,$useruid,));
   $numpeople = $resultset->numRows();
   $thefriend;
@@ -96,124 +90,113 @@ function displayFriends($dbh){
 }
 
 function displayMovies($values, $dbh) {
-  $sql = "select title, mid, rating, type, genre from media where title like concat('%', ?, '%') and type = 'movie'";
+  global $page;
+  $sql = "select title, mid, rating, type, genre from media where title like concat('%', ?, '%') and type = 'movie' order by title";
   $resultset = prepared_query($dbh, $sql, $values);
   $numMovies = $resultset->numRows();
-
+  echo "<table border='1'><tr><th>Title</th><th>Genre</th></tr>";
   if($numMovies == 1) {
     echo "<h3>1 title found</h3>";
-
-        $row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC);
-        $mid = $row['mid'];
-        displayTitle($mid, $dbh);
-
-      } else {
-        echo "<h3>$numMovies titles found</h3>";
-       
-        //display list of movies
-        while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
-          $title= $row['title'];
-          $mid = $row['mid'];
-         displayTitle($mid, $dbh);
-        }
   }
+  else {
+    echo"<h3>$numMovies titles found</h3>";
+  }
+  while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
+    $title = $row['title'];
+    $genre = $row['genre'];
+    $mid = $row['mid'];
+    $type = $row['type'];
+    
+    echo "<tr><td><a href= \"" . $page . "media.php?mid=" . $mid . "\">$title</a></td><td>" . $genre . "</td></tr>";
+
+  }
+  echo "</table>";
+
 }
 
 
 
 function displayTVshows($values, $dbh) {
-  $sql = "select * from media where title like concat('%', ?, '%') and type = 'tv'";
+  global $page;
+  $sql = "select * from media where title like concat('%', ?, '%') and type = 'tv' order by title";
   $resultset = prepared_query($dbh, $sql, $values);
   $numShows = $resultset->numRows();
-
+  echo "<table border='1'><tr><th>Title</th><th>Genre</th></tr>";
   if($numShows == 1) {
     echo "<h3>1 title found</h3>";
-
-        $row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC);
-        $mid = $row['mid'];
-        displayTitle($mid, $dbh);
-
-      } else {
-        echo "<h3>$numShows titles found</h3>";
-       
-        //display list of movies
-        while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
-          $title= $row['title'];
-          $mid = $row['mid'];
-         displayTitle($mid, $dbh);
-        }
   }
+  else {
+    echo "<h3>$numShows titles found</h3>";
+  }
+      //display list of movies
+  while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
+    $title= $row['title'];
+    $genre = $row['genre'];
+    $mid = $row['mid'];
+    echo "<tr><td><a href= \"" . $page . "media.php?mid=" . $mid . "\">$title</a></td><td>" . $genre . "</td></tr>";
+  }
+  echo "</table>";
 }
 
 
+
 function displayAlbums($values, $dbh) {
-  $sql = "select * from media where title like concat('%', ?, '%') and type = 'album'";
+  global $page;
+  $sql = "select * from media where title like concat('%', ?, '%') and type = 'album' order by title";
   $resultset = prepared_query($dbh, $sql, $values);
   $numAlbums = $resultset->numRows();
-
+  echo "<table border='1'><tr><th>Title</th><th>Genre</th></tr>";
+ 
   if($numAlbums == 1) {
     echo "<h3>1 title found</h3>";
-
-        $row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC);
-        $mid = $row['mid'];
-        displayTitle($mid, $dbh);
-
-      } else {
-        echo "<h3>$numAlbums titles found</h3>";
-       
-        //display list of movies
-        while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
-          $title= $row['title'];
-          $mid = $row['mid'];
-         displayTitle($mid, $dbh);
-        }
+  } else {
+    echo "<h3>$numAlbums titles found</h3>";
   }
+  //display list of movies
+  while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
+    $title= $row['title'];
+    $genre = $row['genre'];
+    $mid = $row['mid'];
+  echo "<tr><td><a href= \"" . $page . "media.php?mid=" . $mid . "\">$title</a></td><td>" . $genre . "</td></tr>";
+  }
+  echo "</table>";
 }
 
 
 function displaySongs($values, $dbh) {
-  $sql = "select * from media where title like concat('%', ?, '%') and type = 'song'";
+  global $page;
+  $sql = "select * from media where title like concat('%', ?, '%') and type = 'song' order by title";
   $resultset = prepared_query($dbh, $sql, $values);
   $numSongs = $resultset->numRows();
-
+  echo "<table border='1'><tr><th>Title</th><th>Genre</th></tr>";
   if($numSongs == 1) {
     echo "<h3>1 title found</h3>";
-
-        $row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC);
-        $mid = $row['mid'];
-        displayTitle($mid, $dbh);
-
-      } else {
-        echo "<h3>$numSongs titles found</h3>";
-       
-        //display list of movies
-        while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
-          $title= $row['title'];
-          $mid = $row['mid'];
-         displayTitle($mid, $dbh);
-        }
+  } else {
+    echo "<h3>$numSongs titles found</h3>";
   }
+  //display list of movies
+  while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
+    $title= $row['title'];
+    $genre = $row['genre'];
+    $mid = $row['mid'];
+  echo "<tr><td><a href= \"" . $page . "media.php?mid=" . $mid . "\">$title</a></td><td>" . $genre . "</td></tr>";
+  }
+  echo "</table>";
 }
 
-function displayTitle($mid, $dbh) {
-    global $page;
-    //query 1: movie stats
-    //title, release, director from a given tt
-    $sql1 = "select * from media where mid = ?";
-    
-    //execute first query
-    $resultset1 = prepared_query($dbh, $sql1, $mid);
+function getTrendingMedia($dbh){
+  global $page;
+    echo "<h1>Trending Media</h1>";
+    $sql = "select likes.mid as mid, count(mid) as count, title from likes inner join media using (mid) group by mid order by count(mid) desc limit 20";    
+    $resultset = query($dbh,$sql);
+    while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
+      $title= $row['title'];
+      $count = $row['count'];
+      $mid = $row['mid'];
+      echo "<a href= \"" . $page . "media.php?mid=" . $mid . "\">$title (" . $count . " people like this)</a><br><br>";
+    }
+}
 
-    //get title, release, and director
-    $detailrow = $resultset1->fetchRow(MDB2_FETCHMODE_ASSOC);
-    $title = $detailrow['title'];
-    $rating = $detailrow['rating'];
-    $genre = $detailrow['genre'];
-    $length= $detailrow['length'];
-    $type = $detailrow['type'];
-
-    echo "<a href= \"" . $page . "media.php?mid=" . $mid . "\">$title ($genre)</a><br><br>";
-  }
 
  //--------MAIN--------
 
@@ -228,7 +211,7 @@ function displayTitle($mid, $dbh) {
     displayFriends($dbh);
   }
 
-  if (isset($_GET['sought'])) {
+ else if (isset($_GET['sought'])) {
     $table = $_GET['tables']; //returns which table the user wants to search from 
     $sought = $_GET['sought'];
     if ($table=="People") { //search only within people
@@ -266,11 +249,11 @@ function displayTitle($mid, $dbh) {
 
     }
   }
+  else{
+    getTrendingMedia($dbh);
+  }
 
 
 
 ?>
 
-
-</body>
-</html>

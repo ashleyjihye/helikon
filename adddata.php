@@ -29,53 +29,132 @@ require_once("header.php");
 
   <script>
   $(document).ready(function (){
-  $("#type").change(function() { 
-    var v = $(this).val();
-    if (v == "person"){
-      $("#person").show();
-      $("#moviesandtv").hide();
-      $("#song").hide();
-      $("#albumsongs").hide();
-    }
-    else if (v == "song"){
-      $("#person").hide();
-      $("#moviesandtv").hide();
-      $("#song").show();
-      $("#albumsongs").hide();
-    }
-    else if (v == "moviesandtv"){
-      $("#person").hide();
-      $("#moviesandtv").show();
-      $("#song").hide();
-      $("#albumsongs").hide();
-    }
-    else if (v == "mediaalbum"){
-      $("#person").hide();
-      $("#moviesandtv").hide();
-      $("#song").hide();
-      $("#albumsongs").show();
-    }
-  });
-  $("#type").change();
+
+
+    $("#myTab a[href='#song']").click(function (e) {
+    e.preventDefault()
+    $(this).tab('show')
+  })
+
+  $("#myTab a[href='#album']").click(function (e) {
+    e.preventDefault()
+    $(this).tab('show')
+  })
+
+  $("#myTab a[href='#moviesandtv']").click(function (e) {
+    e.preventDefault()
+    $(this).tab('show')
+  })
+
+  $("#myTab a[href='#actor']").click(function (e) {
+    e.preventDefault()
+    $(this).tab('show')
+  })
+
+  $("#myTab a[href='#info']").click(function (e) {
+    e.preventDefault()
+    $(this).tab('show')
+  })
+
 });
 
 </script>
 
   <h2 class= "title" >Add Data to the Database </h2>
-  <div id="form">
-  <form method="post" action="<?php echo $_SERVER['PHP_SELF']?>">
-  <select name="type" id="type">
-  <option selected="selected" value="song">Song
-  <option value="mediaalbum">Album
-  <option value="moviesandtv">Movies/TV
-  <option value="person">Actor
-  </select>
+
+
+<div id="myTab">
+<ul class="nav nav-tabs">
+  <li class="active"><a href="#song">Song</a></li>
+  <li><a href="#album">Album</a></li>
+  <li><a href="#moviesandtv">Movies/TV</a></li>
+  <li><a href="#actor">Actor</a></li>
+  <li><a href="#info">Info</a></li>
+</ul>
+</div>
+
+
+<div class="tab-content">
+  <div class="tab-pane fade in active" id="song">
+    <br>
+      <form id="songform" method="get" action="<?php echo $_SERVER['PHP_SELF']?>">
+    <p>Title <input required type="text" name="songtitle">
+  <p>Artist <input required type="text" name="songartist">
+  <p>Length <input type="text" name="songlength">
+  <p>Album <input type="text" name="songalbum">
+  <p>Genre <input required type="text" name="songgenre">
+    <input type="hidden" name="type" value="song">
+    <br><br>
+    <input type="submit">
+  <input type="reset">
+  </form>
+  </div>
+
+
+  <div class="tab-pane fade" id="album">
+    <br>
+    <form id="albumform" method="post" action="<?php echo $_SERVER['PHP_SELF']?>">
+<input type="hidden" name="type" value="album">
+    <p>Title <input required type="text" name="albumtitle">
+  <p>Artist <input required type="text" name="albumartist">
+  <p>Length <input type="text" name="albumlength">
+  <p>Genre <input required type="text" name="albumgenre">   
+  <p>Songs:
+  <table style="padding-bottom:20px">
+  <tr><th>Song</th><th>Length</th></tr>
+  <tr><td><input type="text" name="song1"></td><td><input type="text" name="length1"></td></tr>
+  <tr><td><input type="text" name="song2"></td><td><input type="text" name="length2"></td></tr>
+  <tr><td><input type="text" name="song3"></td><td><input type="text" name="length3"></td></tr>
+  <tr><td><input type="text" name="song4"></td><td><input type="text" name="length4"></td></tr>
+  <tr><td><input type="text" name="song5"></td><td><input type="text" name="length5"></td></tr>
+  <tr><td><input type="text" name="song6"></td><td><input type="text" name="length6"></td></tr>
+  <tr><td><input type="text" name="song7"></td><td><input type="text" name="length7"></td></tr>
+  <tr><td><input type="text" name="song8"></td><td><input type="text" name="length8"></td></tr>
+  <tr><td><input type="text" name="song9"></td><td><input type="text" name="length9"></td></tr>
+  <tr><td><input type="text" name="song10"></td><td><input type="text" name="length10"></td></tr>
+  <tr><td><input type="text" name="song11"></td><td><input type="text" name="length11"></td></tr>
+  <tr><td><input type="text" name="song12"></td><td><input type="text" name="length12"></td></tr>
+  <tr><td><input type="text" name="song13"></td><td><input type="text" name="length13"></td></tr>
+  <tr><td><input type="text" name="song14"></td><td><input type="text" name="length14"></td></tr>
+  </table>
   <br><br>
-  <div id="person">
-  <p>Name <input type="text" name="name">
+  <input type="submit">
+  <input type="reset">
+  </form>
+</div>
 
+
+  <div class="tab-pane fade" id="moviesandtv">
+    <br>
+     <form id="moviesandtvform" method="post" action="<?php echo $_SERVER['PHP_SELF']?>">
+      <input type="hidden" name="type" value="moviesandtv">
+  Type: <select name="mediatype">
+  <option value="tv">TV
+  <option value="movie">Movie
+  </select>
+  <p>Title <input required type="text" name="title">
+  <p>Length <input type="text" name="length">
+  <p>Genre <input required type="text" name="genre">  
+  <p>Actors:
+    <p><input type="text" name="mediaactor1">
+    <p><input type="text" name="mediaactor2">
+    <p><input type="text" name="mediaactor3">
+    <p><input type="text" name="mediaactor4">
+    <p><input type="text" name="mediaactor5">
+    <p><input type="text" name="mediaactor6">
+      <br><br>
+    <input type="submit">
+    <input type="reset">
+    </form>
+    </div>
+
+
+  <div class="tab-pane fade" id="actor">
+    <br>
+     <form id="actorform" method="post" action="<?php echo $_SERVER['PHP_SELF']?>">
+      <input type="hidden" name="type" value="person">
+    <p>Name <input required type="text" name="name">
   <p>Media:
-
   <table style="padding-bottom:20px">
   <tr><th>Title</th><th>Type</th></tr>
     <tr><td><input type="text" name="media1"></td>
@@ -115,65 +194,25 @@ require_once("header.php");
       <option value="tv">TV
       </select></td></tr>
     </table>
+    <br><br>
+    <input type="submit">
+    <input type="reset">
+    </form>
+  </div>
 
+  <div class="tab-pane fade" id="info">
+    <br>
+    Welcome to this page! 
+    <br>To add a song, go to the Song tab and enter the song's title, artist, and genre.
+    <br>To add an album, go to the Album tab and enter the album title, the artist, the genre, and any songs that are on the album.
+    <br>To add a movie or tv show, go to the Movie/TV tab. Select either TV or Movie, then enter the title of the media, as well as the genre and any actors that are in it.
+    <br>To add multiple movies or tv shows to an actor, go to the Actor tab. Enter the person's name, and then any movies or TV shows they are in. If there are duplicates of any tv shows and movies, you will need to select the type of media (TV show or movie) that you are trying to add.
+    <br><br>Types of genres (both movies/tv and music): <br>'action','comedy','adventure','documentary','drama','mystery','reality',<br>'sitcom','anime','children','classic','faith','foreign','horror','independent',<br>'musical','romance','scifi','fantasy','romance','thriller','medical','procedural','hiphop',<br>'pop','classical','jazz','rap','country','alternative','faith','rock','blues','children','dance','electronic',<br>'easy listening','r&b','soul','reggae','metal','soundtrack','foreign','indie','kpop','dubstep'
   </div>
 
 
-  <div id="song">
-  <p>Title <input type="text" name="songtitle">
-  <p>Artist <input type="text" name="songartist">
-  <p>Length <input type="text" name="songlength">
-  <p>Album <input type="text" name="songalbum">
-  <p>Genre <input type="text" name="songgenre">
-  </div>
+</div>
 
-
-  <div id="albumsongs">
-  <p>Title <input type="text" name="albumtitle">
-  <p>Artist <input type="text" name="albumartist">
-  <p>Length <input type="text" name="albumlength">
-  <p>Genre <input type="text" name="albumgenre">   
-  <p>Songs:
-  <table style="padding-bottom:20px">
-  <tr><th>Song</th><th>Length</th></tr>
-  <tr><td><input type="text" name="song1"></td><td><input type="text" name="length1"></td></tr>
-  <tr><td><input type="text" name="song2"></td><td><input type="text" name="length2"></td></tr>
-  <tr><td><input type="text" name="song3"></td><td><input type="text" name="length3"></td></tr>
-  <tr><td><input type="text" name="song4"></td><td><input type="text" name="length4"></td></tr>
-  <tr><td><input type="text" name="song5"></td><td><input type="text" name="length5"></td></tr>
-  <tr><td><input type="text" name="song6"></td><td><input type="text" name="length6"></td></tr>
-  <tr><td><input type="text" name="song7"></td><td><input type="text" name="length7"></td></tr>
-  <tr><td><input type="text" name="song8"></td><td><input type="text" name="length8"></td></tr>
-  <tr><td><input type="text" name="song9"></td><td><input type="text" name="length9"></td></tr>
-  <tr><td><input type="text" name="song10"></td><td><input type="text" name="length10"></td></tr>
-  <tr><td><input type="text" name="song11"></td><td><input type="text" name="length11"></td></tr>
-  <tr><td><input type="text" name="song12"></td><td><input type="text" name="length12"></td></tr>
-  <tr><td><input type="text" name="song13"></td><td><input type="text" name="length13"></td></tr>
-  <tr><td><input type="text" name="song14"></td><td><input type="text" name="length14"></td></tr>
-  </table>
-  </div>
-  <div id="moviesandtv">
-  <select name="mediatype">
-  <option value="tv">TV
-  <option value="movie">Movie
-  </select>
-
-  <p>Title <input type="text" name="title">
-  <p>Length <input type="text" name="length">
-  <p>Genre <input type="text" name="genre">  
-
-  <p>Actors:
-    <p><input type="text" name="mediaactor1">
-    <p><input type="text" name="mediaactor2">
-    <p><input type="text" name="mediaactor3">
-    <p><input type="text" name="mediaactor4">
-    <p><input type="text" name="mediaactor5">
-    <p><input type="text" name="mediaactor6">
-
-  </div>
-  <input type="submit">
-  <input type="reset">
-  </form></div>
   <br>
   
   <?php
@@ -201,7 +240,7 @@ function getUid($dbh, $username) {
 
 $dbh = db_connect($athomas2_dsn);
 $person = "Insert into person (name,addedby) values (?,?)";
-$media = "Insert into media (title, genre, length, type, albumid, dateadded,addedby) values (?,?,?,?,?,?,?)";
+$media = "Insert into media (title, genre, length, type, albumid, dateadded,addedby, rating) values (?,?,?,?,?,?,?,0)";
 $contribution = "Insert into contribution values (?,?)";
 $findmedia = "Select * from media where title = ?";
 $findmediawithtype = "select * from media where title = ? and type = ?";

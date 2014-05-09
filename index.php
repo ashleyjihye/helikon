@@ -1,42 +1,3 @@
-<head>
-	<meta charset="utf-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>Helikon</title>
-
-	<!-- Bootstrap -->
-	<link href="css/bootstrap.min.css" type="text/css" rel="stylesheet">
-
-</head>
-<body>
-	
-<style type="text/css">
-	body{
-	    background: url("background.jpg") no-repeat top center fixed;
-	    background-size: cover;
-	    margin: 0;
-	    padding: 0;
-	    height: 100%;
-	    width: 100%;
-	}
-	}
-
-</style>
-
-	<script src="https://code.jquery.com/jquery.js"></script>
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-	<script src="js/bootstrap.min.js"></script>
-	<img src="helikon.png" style="position: absolute; margin: auto; left:0; right:0; top:0; bottom:0;" alt="helikonlogo">
-	<form style="text-align:center;" method="link" action="login.php">
-		<input type="submit" value="Log In" class="btn btn-primary btn-lg">
-	</form><br>
-	<form style="text-align:center;" method="link" action="#signup">
-		<input type="submit" value="Sign In" class="btn btn-default btn-lg">
-	<p style="text-align: center;">
-	</form><br>
-
-
-
 <?php
 
 require_once("MDB2.php");
@@ -44,29 +5,147 @@ require_once("/home/cs304/public_html/php/MDB2-functions.php");
 require_once("athomas2-dsn.inc");
 require_once("header.php");
 
-printPageTop("Sign In to Helikon");
-printSignUpForm();
-signIn();
-logIn();
 
-function printSignUpForm() {
-    $script = $_SERVER['PHP_SELF'];
-    print <<<EOT
-      <div id="signup">
-<form method="post" action="$script">
-  <label for="name">Name</label> <input type="text" name="name" id="name"><br>
-  <label for="email">Email</label> <input type="text" name="email" id="email"><br>
-  <label for="username">Username</label> <input type="text" name="username" id="username"><br>
-  <label for="password">Password</label> <input type="password" name="password" id="password"><br>
-    <label for="password">Confirm Password</label> <input type="password" name="password1" id="password1"><br>
-  <input type="submit" value="login">
-</form>
-</div>
-EOT;
-}
+printPageTop("Helikon");
+logIn();
+signIn();
+
+
+ 
 
 ?>
+	
+<style type="text/css">
+#intro { 
+  background: url() 50% 0 fixed; 
+  height: auto;  
+  margin: 0 auto; 
+  width: 100%; 
+  position: relative; 
+  box-shadow: 0 0 50px rgba(0,0,0,0.8);
+  padding: 100px 0;
+}
+#about { 
+  background: url(images/home.jpg) 50% 0 fixed; 
+  height: auto;  
+  margin: 0 auto; 
+  width: 100%; 
+  position: relative; 
+  box-shadow: 0 0 50px rgba(0,0,0,0.8);
+  padding: 200px 0;
+}
+#signup { 
+  background: url(background.jpg) 50% 0 fixed; 
+  height: auto;
+  margin: 0 auto; 
+  width: 100%; 
+  position: relative; 
+  box-shadow: 0 0 50px rgba(0,0,0,0.8);
+  padding: 100px 0;
+  color: #fff;
+}
 
+/* Non-essential demo stuff */
+.hero-unit {
+  background-color: #fff;
+  box-shadow: 0 0 20px rgba(0,0,0,0.1);
+ }
+.media-object { 
+ width: 64px; height: 64px; padding-bottom: 30px;
+ }
+</style>
+
+<body>
+	
+<div style="background-image: url();" class="navbar navbar-default">
+   <div class="navbar-inner">
+   <div class="navbar-header">
+ 
+      <a class="brand" href="index.php"><img src="logofinal.png"></a> 
+  
+   </div>
+</div>
+   <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+   <ul class="nav navbar-nav">
+   <li><a href="#about">About</a></li>
+   <li><a href="#signup">Sign Up</a></li>
+   </ul>
+   <ul class="nav navbar-nav navbar-right">
+   <form method="post" action="<?php $_SERVER['PHP_SELF'] ?>" class="navbar-search pull-right">
+   <input type="text" class="span2" name="loginusername" id="loginusername" placeholder="username">
+   <input type="password" class="span2" name="loginpassword" id="loginpassword" placeholder="Password">
+   <input type="submit" value="login" class="btn btn-primary"></form> 
+
+   
+   </div>
+   </div>
+   </div>
+		   
+	
+
+	<!-- Section #1 -->
+	<section id="intro" data-speed="6" data-type="background">
+		<div class="container">
+			<div class="row-fluid">
+		      
+		      
+
+   <p style="text-align:center; font-size: 600%; font-family: junction regular;"> Welcome to Helikon</p>
+	    
+	    	</div>
+	    
+	    </div>
+	</section>
+
+	<!-- Section #2 -->
+	<section id="about" data-speed="4" data-type="background">
+		<div class="container">
+			<div class="row-fluid">
+		        <div class="span4 well">
+		          <h2>Helikon</h2>
+		          <p>Contect with your friends view media etc etc </p>
+		          <p><a class="btn btn-success" href="#">View details &raquo;</a></p>
+		        </div><!-- /.span4 -->
+		      
+	
+	    	</div>
+	    </div>
+	</section>
+
+	<!-- Section #3 -->
+	<section id="signup" data-speed="2" data-type="background">
+		<div class="container">
+			<div class="page-header">
+				<h1>Sign Up for Helikon<small> It&#39s free!</small></h1>
+			</div>
+			<div class="row-fluid">
+		        <div class="span4">
+		          
+      <form style="text-align:center;" class-"form-horizontal" method="post" action="<?php $_SERVER['PHP_SELF']  ?>">
+      <div style="text-align:center; width:400px; margin: auto; margin-top: 50px;" class="form-group">
+    <label for="name" class="col-sm-2 control-label">Name</label> 
+    <div class="col-sm-10"><input type="text" class="form-control" name="name" id="name"></div></div>
+					     
+
+<div style="text align: center; width:400px; margin: auto; margin-top: 20px; margin-bottom: 20px;" class="form=group">
+    <label style="padding: 1px;" for="email" class="col-sm-2 control-label">Email</label> <div style="margin-top:10px;" class="col-sm-10"><input type="text" class="form-control" name="email" id="email"></div></div>
+
+<div style="text align: center; width:400px; margin: auto; margin-top: 20px; marign-bottom: 20px;" class="form=group">
+  <label style="padding: 1px;" for="username" class="col-sm-2 control-label">Username</label> <div style="margin-top: 10px;" class="col-sm-10"><input type="text" class="form-control" name="username" id="username"></div></div>
+
+<div style="text-align:center; width: 400px; margin: auto; margin-top: 20px; margin-bottom:20px;" class="form-group">
+  <label style="padding: 1px;" for="password" class="col-sm-2 control-label">Password</label> <div style="margin-top: 10px;" class="col-sm-10"><input type="password" class="form-control" name="password" id="password"></div></div>
+
+<div style="text align: center; width:400px; margin: auto; margin-top: 20px; margin-bottom: 20px;" class="form=group">
+    <label style="padding:1px;" for="password" class="col-sm-2 control-label">Confirm Password</label><div style="margin-top:10px;" class="col-sm-10"> <input type="password" class="form-control" name="password1" id="password1"></div></div>
+
+
+<div style="text align: center; width:400px; margin: auto; margin-top: 50px; margin-bottom: 20px;" class="form=group">
+	<input style="margin-top: 20px;" type="submit" value="Sign Up" class="btn btn-default btn-lg">
+	<p style="text-align: center;"></div>
+</form>
+	    	</div>
+	    </div>
+	</section>
 
 </body>
-</html>

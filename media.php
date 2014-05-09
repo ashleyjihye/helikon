@@ -19,26 +19,36 @@ echo '<script>
        }
     );
 
-     $("#commentform").submit(function(e){
+     $(".commentform").submit(function(e){
+      console.log("Submitting form by Ajax");
       e.preventDefault();
-      data = $("#commentform").serialize();
-      var actionurl = e.currentTarget.action;
+      console.log($(this));
+      var thetextbox = $(this).find("#comment");
+      data = $(e.target).closest(".commentform").serialize();
+      var data1 = data;
+      console.log(data);
+
+      var media = $(this).closest(".media-body");
+      console.log("will append to "+media);
       $.ajax({
         type: "POST",
-        url: actionurl,
-        dataType = "json",
-        data = data,
+        url: "commentsajax.php",
+        data: data,
         success: function(data){
-          alert("Data Saved");
-          $(this).closest(".media-body").append("It worked!");
+          $(media).append(data);
+          $(thetextbox).val("");
+          $(".replyform").hide();
+        },
+        error: function(jqXHR, textStatus, errorThrown){
+          alert(textStatus);
         }
       });
     });
 
-
   $(".replyform textarea")
       .keypress(function (e) {
         if (e.keyCode == 13  && !e.shiftKey){
+          console.log("Submitting");
           $(this).closest("form")
             .submit();
         }
@@ -51,12 +61,13 @@ echo '<script>
         $(this).closest(".media-body")
         .find(".replyform")
         .first()
-        .show();
+        .show();    
         
         $(this).closest(".media-body")
         .find(".replyform")
         .first().find("#comment").focus();
       });
+
   });
 
 
@@ -191,12 +202,12 @@ function addMedia($dbh, $mid, $uid){
     query($dbh,$sql);
 }
 
-function showComments($page, $dbh, $mid){
-  $sql = "select rid, uid, name, comment, initial, dateadded from reviews inner join user using (uid) where mid = ? order by initial, dateadded";
+function showComments($page, $dbh, $mid, $pageuid){
+  $sql = "select rid, uid, name, comment, initial, dateadded from reviews inner join user using (uid) where mid = ? order by initial desc, dateadded";
   $resultset = prepared_query($dbh,$sql,$mid);
   $lastinitial = 0;
   $counter = 0;
-  echo '<div class="auto" style="width:600px; height:500px; overflow: auto;">';
+  echo '<div class="auto" style="width:600px; height:500px;">';
   while ($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)){
     $name = $row['name'];
     $comment = $row['comment'];
@@ -218,24 +229,28 @@ function showComments($page, $dbh, $mid){
             <div class="media-body">
             <h4 class="media-heading">' . $name . '</h4> at ' . $time . '<br>' . $comment . '
             <br><span class="comment-reply" style="color:blue;" >Reply</span>
-            <br><div class="replyform"><form id="commentform" method="get" action="' . $page . '">
+            <br><div class="replyform"><form class="commentform" method="get" action="' . $page . '">
             <input type="hidden" name="mid" value="' . $mid . '">
             <input type="hidden" name="rid" value="' . $rid . '">
+            <input type="hidden" name="uid" value="' . $pageuid . '">
             <textarea rows="1" cols="50" id="comment" name="comment"></textarea><br>
             <input type="hidden" name="addcomment">
+            <input type="submit" name="submit">
             </form></div><br>';
     }
     else{
-      echo '<div class="media"><a class="pull-left" href="user.php?uid=$uid">
+      echo '<div class="media"><a class="pull-left" href="user.php?uid=' . $uid . '">
             <img class="media-object" src="adele.jpg" alt="Media Object"></a>
             <div class="media-body">
             <h4 class="media-heading">' . $name . '</h4> at ' . $time . '<br>' . $comment . '
             <br><span class="comment-reply" style="color:blue"; >Reply</span>
-            <br><div class="replyform"><form id="commentform" method="get" action="' . $page . '">
+            <br><div class="replyform"><form class="commentform" method="get" action="' . $page . '">
             <input type="hidden" name="mid" value="' . $mid . '">
             <input type="hidden" name="rid" value="' . $rid . '">
+            <input type="hidden" name="uid" value="' . $pageuid . '">
             <textarea rows="1" cols="50" id="comment" name="comment"></textarea><br>
             <input type="hidden" name="addcomment">
+            <input type="submit" name="submit">
             </form></div><br></div></div>';
     }
   }
@@ -243,7 +258,7 @@ function showComments($page, $dbh, $mid){
 }
 
 function commentForm($page, $mid){
-  echo '<form id="commentform" method="get" action="' . $page . '">
+  echo '<form id="commentform" method="post" action="' . $page . '">
       <input type="hidden" name="mid" value="' . $mid . '">
       <textarea rows="4" cols="50" name="comment"></textarea><br>
     <input type="hidden" name="addcomment">
@@ -274,29 +289,28 @@ function addComment($dbh, $mid, $uid, $parentrid, $comment){
    prepared_statement($dbh, $sql, $values);
 }
 
-function addRating($dbh,$uid,$mid,$rating){
-  $sql = "select * from ratings where uid = ? and mid = ?";
-  $values = array($uid,$mid,);
+function getNumRatings($dbh,$mid){
+  $sql = "select count(uid) as count from ratings where mid = ?";
+  $values = array($mid);
+  $resultset = prepared_query($dbh,$sql,$values);
+  $row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC);
+  return $row['count'];
+}
+  
+function getYourRating($dbh,$uid,$mid){
+  $sql = "select rating from ratings where uid = ? and mid = ?";
+  $values = array($uid, $mid);
   $resultset = prepared_query($dbh,$sql,$values);
   $numRows = $resultset->numRows();
   if ($numRows == 0){
-     $sql = "insert into ratings values (?,?,?)";
-     $values = array($uid,$mid,$rating,);
-     prepared_statement($dbh, $sql, $values);
-   }
-   else {
-      $sql = "update ratings set rating = ? where uid = ? and mid = ?";
-      $values = array($rating,$uid,$mid,);
-      prepared_statement($dbh,$sql,$values);
-   }
-   $sql = "select mid, avg(rating) as avgrating from ratings where mid = ?";
-   $resultset = prepared_query($dbh,$sql,$mid);
-   $row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC);
-   $avgrating = $row['avgrating'];
-   $sql = "update media set rating = ? where mid = ?";
-   $resultset = prepared_statement($dbh,$sql,array($avgrating,$mid,));
+    return 0;
+  }
+  else{
+    $row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC);
+    return $row['rating'];
+  }
 }
-  
+
 checkLogInStatus();   
 $username = $_SESSION['username'];
 $uid = getUid($dbh,$username);
@@ -323,16 +337,14 @@ if (isset($_REQUEST['mid'])){
     createNavBar("home.php");
     echo "<h1>$title</h1>";
 
-    if (isset($_REQUEST['rating'])){
-      addRating($dbh,$uid,$pagemid,$_REQUEST['rating']);
-      $mediaarray = getMedia($pagemid,$dbh);
-      $rating = $mediaarray['rating'];
-    }
+    $numRatings = getNumRatings($dbh,$pagemid);
+    $myRating = getYourRating($dbh,$uid,$pagemid);
+    echo "<div id='currentRating'>";
+    createActualRating($rating, $numRatings);
+    echo "</div><br>";
+    createYourRating($pagemid, $myRating, $uid);
 
-    createStars($pagemid);
-
-    echo "Rating: $rating<br>";
-    echo "Genre: $genre<br>";
+    echo "<br>Genre: $genre<br>";
 
     if ($length != ""){
       echo "Length: $length<br>";
@@ -371,8 +383,9 @@ if (isset($_REQUEST['mid'])){
       }
       addComment($dbh, $pagemid, $uid, $parentrid, $comment);
     }
-    showComments($page,$dbh,$pagemid);
     commentForm($page, $pagemid);
+    showComments($page,$dbh,$pagemid, $uid);
+
   }
 }
 

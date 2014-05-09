@@ -85,15 +85,15 @@ create table likes (
 
 create table reviews (
        rid int not null primary key auto_increment,
-       uid int not null, -- user that wrote it
-       mid int not null, -- what the user is commenting on
-       dateadded datetime, -- when the user wrote it
-       initial int, -- what the original review the user is commenting on is (0 if it is the original)
-       comment varchar(1000), -- the actual review or comment
+       uid int not null,
+       mid int not null,
+       dateadded datetime,
+       initial int,
+       comment varchar(1000),
        INDEX (uid),
        INDEX (mid),
        INDEX (initial),
-       foreign key (initial) references reviews(rid) on delete restrict,
+       foreign key (initial) references reviews(rid) on delete set null,
        foreign key (uid) references user(uid) on delete restrict,
        foreign key (mid) references media(mid) on delete restrict
 )

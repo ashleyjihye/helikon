@@ -193,7 +193,12 @@ function getTrendingMedia($dbh){
       $title= $row['title'];
       $count = $row['count'];
       $mid = $row['mid'];
+      if($count==1) {
+	echo"<a href=\"" .$page. "media.php?mid=" . $mid . "\">$title (" . $count . " person likes this)</a><br><br>";
+      }
+      else {
       echo "<a href= \"" . $page . "media.php?mid=" . $mid . "\">$title (" . $count . " people like this)</a><br><br>";
+      }
     }
 }
 

@@ -8,9 +8,9 @@ $dbh = db_connect($athomas2_dsn);
 
 function logIn() {
     global $dbh;
-    if(isset($_POST['username'])) {
-        $username = $_POST['username'];
-        if( loginCredentialsAreOkay($dbh,$username,$_POST['password']) ) {
+    if(isset($_POST['loginusername'])) {
+        $username = $_POST['loginusername'];
+        if( loginCredentialsAreOkay($dbh,$username,$_POST['loginpassword']) ) {
           session_start();
             $_SESSION['username'] = $username;
             header('Location: home.php');
@@ -23,7 +23,7 @@ function logIn() {
 
 function logOut() {
     session_destroy();
-    header('Location: index.html');
+    header('Location: index.php');
 }
 
 function signIn(){
@@ -59,7 +59,7 @@ function checkLogInStatus() {
     return true;
   }
   else {
-    header('Location: index.html');
+    header('Location: index.php');
     exit();
   }
 
@@ -91,6 +91,8 @@ function printPageTop($title) {
 <script src="https://code.jquery.com/jquery.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
 <script src="js/bootstrap.min.js"></script>
+<script src="raty-2.5.2/lib/jquery.raty.js"></script>
+<script src="raty-2.5.2/lib/jquery.raty.min.js"></script>
 </head>
 <body>
 
@@ -109,7 +111,7 @@ echo '<nav class="navbar navbar-default" role="navigation">
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="' . $page . '">Helikon</a>
+     <a class="brand" href="' . $page . '"><img src="logofinal.png"></a> 
     </div>
 
     <!-- Collect the nav links, forms, and other content for toggling -->
@@ -135,7 +137,6 @@ echo '<nav class="navbar navbar-default" role="navigation">
         <button type="submit" class="btn btn-default">Submit</button>
       </form>
       <ul class="nav navbar-nav navbar-right">
-        <li><a href="#">Advanced Search</a></li>
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown">Account<b class="caret"></b></a>
           <ul class="dropdown-menu">
@@ -152,87 +153,33 @@ echo '<nav class="navbar navbar-default" role="navigation">
 </nav>';
 }
 
-function createStars($mid){
-  echo '<form method="get" action="media.php"><div class="stars">
-     <input type="hidden" name="mid" value="' . $mid . '">
-   <label><input id="rating-1" name="rating" type="radio" value="1"/>1 Star</label>
-   <label><input id="rating-2" name="rating" type="radio" value="2"/>2 Stars</label>
-   <label><input id="rating-3" name="rating" type="radio" value="3"/>3 Stars</label>
-   <label><input id="rating-4" name="rating" type="radio" value="4"/>4 Stars</label>
-   <label><input id="rating-5" name="rating" type="radio" value="5"/>5 Stars</label>
-   <input type="submit" value="Submit Rating">
-  </div><br></form>';
+function createActualRating($rating, $numReviews){
+  echo "Current Rating: <div class='star' id='star1'></div>
+  <script>$('#star1').raty({ score: " . $rating . ", readOnly: true});</script>
+   (based on " . $numReviews . " reviews)<br>";
 }
 
-/*
-function createStars($mid){
-  echo '<div class="stars">
-   <label><input id="rating-1" name="rating" type="radio" value="1"/>1 Star</label>
-   <label><input id="rating-2" name="rating" type="radio" value="2"/>2 Stars</label>
-   <label><input id="rating-3" name="rating" type="radio" value="3"/>3 Stars</label>
-   <label><input id="rating-4" name="rating" type="radio" value="4"/>4 Stars</label>
-  </div><br>';
-
-  echo"
+function createYourRating($mid, $yourRating, $uid){
+  echo 'Your Rating: <div class="star" id="star2"></div>
   <script>
-
-  var starRating = {
-   create: function(selector) {
-  $(selector).each(function() {
-   var $list = $('<div></div>');
-
-   // loop over every radio button in each container
-   $(this)
-   .find('input:radio')
-   .each(function(i) {
-   var rating = $(this).parent().text();
-   var $item = $('<a href='media.php?mid=" . $mid . "&rating=i''></a>')
-   .attr('title', rating)
-  .addClass(i % 2 == 1 ? 'rating-right' : '')
-   .text(rating);
-   starRating.addHandlers($item);
-   $list.append($item);
-   if ($(this).is(':checked')) {
-    $item.prevAll().andSelf().addClass('rating');
-   }
-        // Hide the original radio buttons
-  $(this).append($list).find('input:radio').hide();
-
-   });
-
-   },
-
-   addHandlers: function(item) {
-
-  $(item).click(function(e) {
-  // Handle Star click
-  var $star = $(this);
-  var $allLinks = $(this).parent();
-
-  // Set the radio button value
-  $allLinks
-   .parent()
-   .find('input:radio[value=' + $star.text() + ']')
-   .attr('checked', true);
-
-  // Set the ratings
-  $allLinks.children().removeClass('rating');
-  $star.prevAll().andSelf().addClass('rating');
-  // prevent default link click
-  e.preventDefault();
-  })
-   
-  .hover(function() {
-   $(this).prevAll().andSelf().addClass('rating-over');
-  },function() {
-   $(this).siblings().andSelf().removeClass('rating-over');
-  });
-   }
-
-  }
-  }
-  </script>";
+    $("#star2").raty({ score: ' . strval($yourRating) . ',
+    click: function(score, evt) {
+      data = "mid=' . $mid . '&uid=' . $uid . '&rating=" + score;
+      $.ajax({
+        type: "POST",
+        url: "ratings.php",
+        data: data,
+        success: function(data){
+          console.log(data);
+          $("#currentRating").html(data);
+        },
+        error: function(jqXHR, textStatus, errorThrown){
+          alert(textStatus);
+        }
+      });
+    }
+    });
+  </script>';
 }
-*/
 
 ?>

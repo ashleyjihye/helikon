@@ -130,6 +130,7 @@ echo '<nav class="navbar navbar-default" role="navigation">
       <option value="Albums">Albums</option>
       <option value="Songs">Songs</option>
       <option value="TVShows">TV Shows</option>
+      <option value="Genres">Genres</option>
       </select>
 
           <input type="text" class="form-control" name="sought" placeholder="Search">

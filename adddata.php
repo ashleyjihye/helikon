@@ -93,7 +93,7 @@ require_once("header.php");
 
   <div class="tab-pane fade" id="album">
     <br>
-    <form id="albumform" method="post" action="<?php echo $_SERVER['PHP_SELF']?>">
+    <form id="albumform" method="get" action="<?php echo $_SERVER['PHP_SELF']?>">
 <input type="hidden" name="type" value="album">
     <p>Title <input required type="text" name="albumtitle">
   <p>Artist <input required type="text" name="albumartist">
@@ -126,7 +126,7 @@ require_once("header.php");
 
   <div class="tab-pane fade" id="moviesandtv">
     <br>
-     <form id="moviesandtvform" method="post" action="<?php echo $_SERVER['PHP_SELF']?>">
+     <form id="moviesandtvform" method="get" action="<?php echo $_SERVER['PHP_SELF']?>">
       <input type="hidden" name="type" value="moviesandtv">
   Type: <select name="mediatype">
   <option value="tv">TV
@@ -151,7 +151,7 @@ require_once("header.php");
 
   <div class="tab-pane fade" id="actor">
     <br>
-     <form id="actorform" method="post" action="<?php echo $_SERVER['PHP_SELF']?>">
+     <form id="actorform" method="get" action="<?php echo $_SERVER['PHP_SELF']?>">
       <input type="hidden" name="type" value="person">
     <p>Name <input required type="text" name="name">
   <p>Media:
@@ -257,11 +257,6 @@ $uid = getUid($dbh,$_SESSION['username']);
 
 if (empty($_REQUEST)){
   echo "Please enter either a person or a piece of media to add to the database!";
-}
-else if (isset($_REQUEST['pickperson'])){
-  //Do this later...
-  
-  
 }
 
 else if (!empty($_REQUEST['type'])){
@@ -463,7 +458,7 @@ else if (!empty($_REQUEST['type'])){
       $songartistexists = prepared_query($dbh,$findmediausingpid,array($title,"song",$personid));
       $numrows1 = $songartistexists->numRows();
       if ($numrows1 != 0){
-        echo "<p>Sorry, there's already a song \"" . $title . "\" by " . $artist . " artist.";
+        echo "<p>Sorry, there's already a song \"" . $title . "\" by " . $artist . ".";
       }
       else{
         $values3 = array($title,$genre,$length,$type,$albumid,$thetime,$uid);
@@ -483,7 +478,7 @@ else if (!empty($_REQUEST['type'])){
     }
   }
 
-  else if ($type == 'mediaalbum'){
+  else if ($type == 'album'){
     if (htmlspecialchars($_REQUEST['albumtitle']) == "" or htmlspecialchars($_REQUEST['albumartist']) == ""){
       echo "Please enter a valid album title and album artist.";
     }
@@ -552,7 +547,7 @@ else if (!empty($_REQUEST['type'])){
         $songartistexists = prepared_query($dbh,$findmediausingpid,array($title,"song",$personid));
         $numrows1 = $songartistexists->numRows();
         if ($numrows1 != 0){
-          echo "<p>Sorry, there's already a song \"" . $title . "\" by " . $artist . " artist.";
+          echo "<p>Sorry, there's already a song \"" . $title . "\" by " . $artist . ".";
         }
         else{
           $values3 = array($title,$genre,$length,"song",$albumid,$thetime,$uid);

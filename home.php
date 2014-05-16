@@ -114,6 +114,31 @@ function displayMovies($values, $dbh) {
 
 }
 
+function displayGenres($values, $dbh) {
+  global $page;
+  $sql = "select title, mid, rating, type, genre from media where genre like concat('%', ?, '%') order by genre";
+  $resultset = prepared_query($dbh, $sql, $values);
+  $numMedia = $resultset->numRows();
+  echo "<table border='1'><tr><th>Title</th><th>Genre</th></tr>";
+  if($numMedia == 1) {
+    echo "<h3>1 title found</h3>";
+  }
+  else {
+    echo"<h3>$numMedia titles found</h3>";
+  }
+  while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
+    $title = $row['title'];
+    $genre = $row['genre'];
+    $mid = $row['mid'];
+    $type = $row['type'];
+    
+    echo "<tr><td><a href= \"" . $page . "media.php?mid=" . $mid . "\">$title</a></td><td>" . $genre . "</td></tr>";
+
+  }
+  echo "</table>";
+
+}
+
 
 
 function displayTVshows($values, $dbh) {
@@ -238,7 +263,10 @@ function getTrendingMedia($dbh){
     } elseif ($table=="Songs") { //search only within media
       displaySongs($sought, $dbh);
 
-    }elseif ($table=="All") { //search within media and actors    
+    } elseif ($table=="Genres"){
+      displayGenres($sought,$dbh);
+    }
+    elseif ($table=="All") { //search within media and actors    
       echo "<h1>Users:</h1><br>";
       displayUsers($sought, $dbh);
       echo "<h1>People:</h1><br>";
@@ -251,6 +279,8 @@ function getTrendingMedia($dbh){
       displaySongs($sought, $dbh);
       echo "<h1>Albums:</h1><br>";
       displayAlbums($sought, $dbh);
+      echo "<h1>Genres:</h1><br>";
+      displayGenres($sought, $dbh);
 
     }
   }

@@ -6,25 +6,26 @@ require_once("athomas2-dsn.inc");
 
 $dbh = db_connect($athomas2_dsn);
 
-
 function logIn() {
-    global $dbh;
-    if(isset($_POST['loginusername'])) {
-        $username = $_POST['loginusername'];
-        if( loginCredentialsAreOkay($dbh,$username,$_POST['loginpassword']) ) {
-          session_start();
-            $_SESSION['username'] = $username;
-            header('Location: home.php');
-        }
-        else {
-            echo "<p>Sorry, that's incorrect.  Please try again\n";
-        }
-      }
+  global $dbh;
+  if(isset($_POST['loginusername'])) {
+    $username = $_POST['loginusername'];
+    if( loginCredentialsAreOkay($dbh,$username,$_POST['loginpassword']) ) {
+      session_start();
+      $_SESSION['username'] = $username;
+      $_SESSION['loggedin'] = true;
+      header('Location: home.php');
+    }
+    else {
+      echo "<p>Sorry, that's incorrect.  Please try again\n";
+    }
+  }
 }
 
 function logOut() {
-    session_destroy();
-    header('Location: index.php');
+  session_start();
+  $_SESSION['loggedin'] = false;
+  header('Location: index.php');
 }
 
 function signIn(){
@@ -49,22 +50,25 @@ function signIn(){
       echo "Your passwords did not match. Please try again.";
       exit();
     }
-
   }
-
 }
 
 function checkLogInStatus() {
   session_start();
-  if (isset($_SESSION['username'])){
-
+  if ($_SESSION['loggedin'] == true){
+ //   echo $_SERVER['PHP_SELF'];
+    if (basename($_SERVER['PHP_SELF']) == "index.php"){
+      header('Location: home.php');
+    }
     return true;
   }
   else {
+    if (basename($_SERVER['PHP_SELF']) == "index.php"){
+      return false;
+    }
     header('Location: index.php');
     exit();
   }
-
 }
 
 function loginCredentialsAreOkay($dbh,$username,$password) {
@@ -195,7 +199,7 @@ function getUid($dbh, $username) {
 }
 
 
-function addPerson($dbh, $name, $uid, $findperson, $person){
+function addPerson($dbh, $name, $uid, $description, $findperson, $person){
   $values = array($name);
   $getperson = prepared_query($dbh,$findperson,$values);
   $numrows = $getperson->numRows();
@@ -206,7 +210,7 @@ function addPerson($dbh, $name, $uid, $findperson, $person){
     }
   }
   else {
-    $addperson = prepared_query($dbh,$person,array($name,$uid));
+    $addperson = prepared_query($dbh,$person,array($name,$uid,$description));
     echo "<p>Successfully added " . $name . " to the database.<br>";
     $getpersonid = query($dbh,"select last_insert_id()");
     while($row = $getpersonid->fetchRow(MDB2_FETCHMODE_ASSOC)) {
@@ -239,6 +243,43 @@ function findMedia($dbh, $mediatitle, $mediatype, $findmedia, $findmediawithtype
     $genre = $row['genre'];
     return $mediaid;
   }
+}
+
+function getUserPicture($uid, $dbh){
+  $sql = "select picture from user where uid = ?";
+  $resultset = prepared_query($dbh,$sql,$uid);
+  $row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC);
+  if ($row['picture'] == "y"){
+    $destfile = "userimages/$uid.jpg";
+  }
+  else{
+    $destfile = "userimages/0.jpg";
+  }
+  return $destfile;
+}
+
+function getPersonPicture($pid,$dbh){
+  $sql = "select picture from person where pid = ?";
+  $resultset = prepared_query($dbh,$sql,$pid);
+  $row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC);
+  if ($row['picture'] == 'y'){
+    $destfile = "personimages/$pid.jpg";
+  }
+  else{
+    $destfile = "personimages/0.jpg";
+  }
+  return $destfile;
+}
+
+function getMediaPicture($mid,$dbh){
+  $destfile = "";
+  $sql = "select picture from media where mid = ?";
+  $resultset = prepared_query($dbh,$sql,$mid);
+  $row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC);
+  if ($row['picture'] != "" or $row['picture'] != null){
+    $destfile = $row['picture'];
+  }
+  return $destfile;
 }
 
 
@@ -288,7 +329,7 @@ function editMedia($uid, $mid, $title, $type, $genre, $length, $artist, $albumna
   global $dbh;
   echo '<div id="results" style="display: none;">';
 
-  $person = "Insert into person (name,addedby) values (?,?)";
+  $person = "Insert into person (name,addedby, description) values (?,?, ?)";
   $media = "Insert into media (title, genre, length, type, albumid, dateadded,addedby, rating, description) values (?,?,?,?,?,?,?,0,?)";
   $contribution = "Insert into contribution values (?,?)";
   $findmedia = "Select * from media where title = ?";
@@ -307,7 +348,7 @@ function editMedia($uid, $mid, $title, $type, $genre, $length, $artist, $albumna
     $deletecontribution = "delete from contribution where mid = ?";
     $delete = prepared_statement($dbh, $deletecontribution, $mid);
 
-    $artistid = addPerson($dbh, $artist, $uid, $findperson, $person);
+    $artistid = addPerson($dbh, $artist, $uid, null, $findperson, $person);
     addContribution($dbh, $mid, $artistid, $title, $artist, $findcontribution, $contribution);
   }
 
@@ -330,7 +371,7 @@ function editMedia($uid, $mid, $title, $type, $genre, $length, $artist, $albumna
       $delete = prepared_statement($dbh, $deletecontribution1, array($mid,$value));
     }
     foreach ($addactorarray as $key => $value) {
-      $artistid = addPerson($dbh, $value, $uid, $findperson, $person);
+      $artistid = addPerson($dbh, $value, $uid, null, $findperson, $person);
       addContribution($dbh, $mid, $artistid, $title, $value, $findcontribution, $contribution);
     }
 
@@ -341,7 +382,7 @@ function editMedia($uid, $mid, $title, $type, $genre, $length, $artist, $albumna
   echo "</div>";
 }
 
-function editPerson($pid, $name, $deletecontributionarray, $addcontributionarray, $addcontributiontypearray){
+function editPerson($pid, $name, $description, $deletecontributionarray, $addcontributionarray, $addcontributiontypearray){
 
   global $dbh;
   echo '<div id="results" style="display: none;">';
@@ -351,8 +392,8 @@ function editPerson($pid, $name, $deletecontributionarray, $addcontributionarray
   $findmediawithtype = "select * from media where title = ? and type = ?";
   $findcontribution = "select * from contribution where pid = ? and mid = ?";
 
-  $update = "update person set name = ? where pid = ?";
-  $values = array($name, $pid,);
+  $update = "update person set name = ?, description = ? where pid = ?";
+  $values = array($name, $description, $pid,);
   $updateperson = prepared_statement($dbh, $update, $values);
 
   foreach ($deletecontributionarray as $key => $value) {

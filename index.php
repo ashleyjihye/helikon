@@ -7,11 +7,9 @@ require_once("header.php");
 
 
 printPageTop("Helikon");
+checkLogInStatus();
 logIn();
 signIn();
-
-
- 
 
 ?>
 	

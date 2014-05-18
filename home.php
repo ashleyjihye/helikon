@@ -10,64 +10,86 @@ $dbh = db_connect($athomas2_dsn);
   printPageTop("Home");
   createNavBar($_SERVER['PHP_SELF']);
 
-function displayNames($values, $dbh) {
+function displayNames($values, $dbh, $status) {
   $sql = "select * from person where name like concat ('%', ?, '%') order by name";
   $resultset = prepared_query($dbh, $sql, $values);
   $numpeople = $resultset->numRows();
  
   if ($numpeople == 0) {
     echo "0 people found";
+    return 0;
   }
   else {
+    $location;
   echo "<table border='1'> <tr> <th>Name</th></tr>";
   
   if ($numpeople == 1) {
     while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
       $pid = $row['pid'];
+      $name = $row['name'];
+      $location = "person.php?pid=" . $pid;
+    }
+    if ($status == "single"){
       header ("Location: person.php?pid=" . $pid);
     }
-   // echo "<h3>1 name found</h3>";
+    else {
+      echo "<h3>1 name found</h3>";
+      echo "<tr><td><a href= \"person.php?pid=" . $pid . "\">$name</a></td></tr>";
+    }
   }
   else {
     echo "<h3>$numpeople names found</h3>";
-  }
     while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
         $name = $row['name'];
         $pid = $row['pid'];
         echo "<tr><td><a href= \"person.php?pid=" . $pid . "\">$name</a></td></tr>";
     
     }
+    $location = -1;
+  }
     echo "</table>";
-}
+    return $location;
+  }
 }
 
-function displayUsers($values,$dbh){
+function displayUsers($values,$dbh, $status){
   $sql = "select * from user where name like concat ('%', ?, '%') order by name";
   $resultset = prepared_query($dbh, $sql, $values);
- 
+
  
   $numpeople = $resultset->numRows();
   if ($numpeople == 0) {
     echo "0 users found";
+    return 0;
   }
   else {
+    $location;
     echo "<table border='1'><tr><th>Name</th></tr>";
   if($numpeople==1) {
     while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
       $uid = $row['uid'];
+      $name = $row['name'];
+      $location = "user.php?uid=" . $uid;
+    }
+    if ($status == "single"){
       header ("Location: user.php?uid=" . $uid);
+    }
+    else{
+      echo "<h3>1 user found</h3>";
+      echo "<tr><td><a href= \"user.php?uid=" . $uid . "\">$name</a></td></tr>";
     }
   }
   else {
     echo "<h3>$numpeople users found</h3>";
-  }
-
   while($row= $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
     $name = $row['name'];
     $uid=$row['uid'];
     echo "<tr><td><a href= \"user.php?uid=" . $uid . "\">$name</a></td></tr>";
   }
+  $location = -1;
+}
   echo "</table>";
+  return $location;
 }
 }
   
@@ -82,7 +104,7 @@ function displayFriends($dbh){
   $numpeople = $resultset->numRows();
   $thefriend;
   if ($numpeople == 1) {
-    echo "<h3>1 friends found</h3>";
+    echo "<h3>1 friend found</h3>";
   }
   else{    
     echo "<h3>$numpeople friends found</h3>";
@@ -104,24 +126,34 @@ function displayFriends($dbh){
   }
 }
 
-function displayMovies($values, $dbh) {
+function displayMovies($values, $dbh, $status) {
   $sql = "select title, mid, rating, type, genre from media where title like concat('%', ?, '%') and type = 'movie' order by title";
   $resultset = prepared_query($dbh, $sql, $values);
   $numMovies = $resultset->numRows();
   if ($numMovies == 0) {
     echo "0 movies found";
+    return 0;
   }
   else {
+    $location;
   echo "<table border='1'><tr><th>Title</th><th>Genre</th></tr>";
   if($numMovies == 1) {
     while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
       $mid = $row['mid'];
+      $title = $row['title'];
+      $genre = $row['genre'];
+      $location = "media.php?mid=" . $mid;
+    }
+    if ($status == "single"){
       header ("Location: media.php?mid=" . $mid);
+    }
+    else{
+      echo "<h3>1 movie found</h3>";
+      echo "<tr><td><a href= \"media.php?mid=" . $mid . "\">$title</a></td><td>" . $genre . "</td></tr>";
     }
   }
   else {
     echo"<h3>$numMovies titles found</h3>";
-  }
   while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
     $title = $row['title'];
     $genre = $row['genre'];
@@ -131,29 +163,43 @@ function displayMovies($values, $dbh) {
     echo "<tr><td><a href= \"media.php?mid=" . $mid . "\">$title</a></td><td>" . $genre . "</td></tr>";
 
   }
+  $location = -1;
+}
   echo "</table>";
+  return $location;
 
 }
 }
 
-function displayGenres($values, $dbh) {
+function displayGenres($values, $dbh, $status) {
   $sql = "select title, mid, rating, type, genre from media where genre like concat('%', ?, '%') order by genre";
   $resultset = prepared_query($dbh, $sql, $values);
   $numMedia = $resultset->numRows();
   if ($numMedia == 0) {
     echo "0 titles with that genre found";
+    return 0;
   }
   else {
-    echo "<table border='1'><tr><th>Title</th><th>Genre</th></tr>";
-    if($numMedia == 1) {
-     while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
+
+    $location;
+  echo "<table border='1'><tr><th>Title</th><th>Genre</th></tr>";
+  if($numMedia == 1) {
+    while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
       $mid = $row['mid'];
+      $title = $row['title'];
+      $genre = $row['genre'];
+      $location = "media.php?mid=" . $mid;
+    }
+    if ($status == "single"){
       header ("Location: media.php?mid=" . $mid);
+    }
+    else{
+      echo "<h3>1 title found</h3>";
+      echo "<tr><td><a href= \"media.php?mid=" . $mid . "\">$title</a></td><td>" . $genre . "</td></tr>";
     }
   }
   else {
     echo"<h3>$numMedia titles found</h3>";
-  }
   while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
     $title = $row['title'];
     $genre = $row['genre'];
@@ -163,101 +209,150 @@ function displayGenres($values, $dbh) {
     echo "<tr><td><a href= \"media.php?mid=" . $mid . "\">$title</a></td><td>" . $genre . "</td></tr>";
 
   }
+  $location = -1;
+}
   echo "</table>";
-
-  }
+  return $location;
+}
 }
 
 
 
-
-function displayTVshows($values, $dbh) {
+function displayTVshows($values, $dbh, $status) {
   $sql = "select * from media where title like concat('%', ?, '%') and type = 'tv' order by title";
-  $resultset = prepared_query($dbh, $sql, $values);
+   $resultset = prepared_query($dbh, $sql, $values);
   $numShows = $resultset->numRows();
   if ($numShows == 0) {
-    echo "0 TV shows found";
+    echo "0 tv shows found";
+    return 0;
   }
   else {
+    $location;
   echo "<table border='1'><tr><th>Title</th><th>Genre</th></tr>";
   if($numShows == 1) {
     while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
       $mid = $row['mid'];
+      $title = $row['title'];
+      $genre = $row['genre'];
+      $location = "media.php?mid=" . $mid;
+    }
+    if ($status == "single"){
       header ("Location: media.php?mid=" . $mid);
+    }
+    else{
+      echo "<h3>1 tv show found</h3>";
+      echo "<tr><td><a href= \"media.php?mid=" . $mid . "\">$title</a></td><td>" . $genre . "</td></tr>";
     }
   }
   else {
-    echo "<h3>$numShows titles found</h3>";
-  }
-      //display list of movies
+    echo"<h3>$numShows titles found</h3>";
   while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
-    $title= $row['title'];
+    $title = $row['title'];
     $genre = $row['genre'];
     $mid = $row['mid'];
+    $type = $row['type'];
+    
     echo "<tr><td><a href= \"media.php?mid=" . $mid . "\">$title</a></td><td>" . $genre . "</td></tr>";
+
   }
+  $location = -1;
+}
   echo "</table>";
+  return $location;
+
 }
 }
 
 
-function displayAlbums($values, $dbh) {
+function displayAlbums($values, $dbh, $status) {
   $sql = "select * from media where title like concat('%', ?, '%') and type = 'album' order by title";
   $resultset = prepared_query($dbh, $sql, $values);
   $numAlbums = $resultset->numRows();
   if ($numAlbums == 0) {
     echo "0 albums found";
+    return 0;
   }
   else {
+
+    $location;
   echo "<table border='1'><tr><th>Title</th><th>Genre</th></tr>";
- 
   if($numAlbums == 1) {
-     while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
+    while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
       $mid = $row['mid'];
+      $title = $row['title'];
+      $genre = $row['genre'];
+      $location = "media.php?mid=" . $mid;
+    }
+    if ($status == "single"){
       header ("Location: media.php?mid=" . $mid);
     }
-  } else {
-    echo "<h3>$numAlbums titles found</h3>";
+    else{
+      echo "<h3>1 album found</h3>";
+      echo "<tr><td><a href= \"media.php?mid=" . $mid . "\">$title</a></td><td>" . $genre . "</td></tr>";
+    }
   }
-  //display list of movies
+  else {
+    echo"<h3>$numAlbums albums found</h3>";
   while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
-    $title= $row['title'];
+    $title = $row['title'];
     $genre = $row['genre'];
     $mid = $row['mid'];
-  echo "<tr><td><a href= \"media.php?mid=" . $mid . "\">$title</a></td><td>" . $genre . "</td></tr>";
+    $type = $row['type'];
+    
+    echo "<tr><td><a href= \"media.php?mid=" . $mid . "\">$title</a></td><td>" . $genre . "</td></tr>";
+
   }
+  $location = -1;
+}
   echo "</table>";
+  return $location;
 }
 }
 
-function displaySongs($values, $dbh) {
+function displaySongs($values, $dbh, $status) {
   $sql = "select * from media where title like concat('%', ?, '%') and type = 'song' order by title";
   $resultset = prepared_query($dbh, $sql, $values);
   $numSongs = $resultset->numRows();
   if ($numSongs == 0) {
-    echo "0 songs found";
+    echo "0 albums found";
+    return 0;
   }
   else {
+
+    $location;
   echo "<table border='1'><tr><th>Title</th><th>Genre</th></tr>";
   if($numSongs == 1) {
-     while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
+    while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
       $mid = $row['mid'];
+      $title = $row['title'];
+      $genre = $row['genre'];
+      $location = "media.php?mid=" . $mid;
+    }
+    if ($status == "single"){
       header ("Location: media.php?mid=" . $mid);
     }
-  } else {
-    echo "<h3>$numSongs titles found</h3>";
+    else{
+      echo "<h3>1 song found</h3>";
+      echo "<tr><td><a href= \"media.php?mid=" . $mid . "\">$title</a></td><td>" . $genre . "</td></tr>";
+    }
   }
-  //display list of movies
+  else {
+    echo"<h3>$numSongs songs found</h3>";
   while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
-    $title= $row['title'];
+    $title = $row['title'];
     $genre = $row['genre'];
     $mid = $row['mid'];
-  echo "<tr><td><a href= \"media.php?mid=" . $mid . "\">$title</a></td><td>" . $genre . "</td></tr>";
-  }
-  echo "</table>";
-  }
-}
+    $type = $row['type'];
+    
+    echo "<tr><td><a href= \"media.php?mid=" . $mid . "\">$title</a></td><td>" . $genre . "</td></tr>";
 
+  }
+  $location = -1;
+}
+  echo "</table>";
+  return $location;
+}
+}
 
 function getTrendingMedia($dbh){
     echo "<h1>Trending Media</h1>";
@@ -294,43 +389,61 @@ function getTrendingMedia($dbh){
     $table = $_GET['tables']; //returns which table the user wants to search from 
     $sought = $_GET['sought'];
     if ($table=="People") { //search only within people
-      displayNames($sought, $dbh);
+      displayNames($sought, $dbh, "single");
 
     } elseif ($table=="Users") {
-      displayUsers($sought,$dbh);
+      displayUsers($sought,$dbh, "single");
     }
 
     elseif ($table=="Movies") { //search only within media
-      displayMovies($sought, $dbh);
+      displayMovies($sought, $dbh, "single");
     
     } elseif ($table=="Albums") { //search only within media
-      displayAlbums($sought, $dbh);
+      displayAlbums($sought, $dbh, "single");
 
     } elseif ($table=="TVShows") { //search only within media
-      displayTVshows($sought, $dbh);
+      displayTVshows($sought, $dbh, "single");
 
     } elseif ($table=="Songs") { //search only within media
-      displaySongs($sought, $dbh);
+      displaySongs($sought, $dbh, "single");
 
     } elseif ($table=="Genres"){
-      displayGenres($sought,$dbh);
+      displayGenres($sought,$dbh, "single");
     }
-    elseif ($table=="All") { //search within media and actors    
+    elseif ($table=="All") { //search within media and actors  
+      $resultset = array();  
       echo "<h1>Users:</h1><br>";
-      displayUsers($sought, $dbh);
+      $resultset['1'] = displayUsers($sought, $dbh, "multiple");
       echo "<h1>People:</h1><br>";
-      displayNames($sought, $dbh);
+      $resultset['2'] = displayNames($sought, $dbh, "multiple");
       echo "<h1>Movies:</h1><br>";
-      displayMovies($sought, $dbh);
+      $resultset['3'] = displayMovies($sought, $dbh, "multiple");
       echo "<h1>TV Shows:</h1><br>";
-      displayTVshows($sought, $dbh);
+      $resultset['4'] = displayTVshows($sought, $dbh, "multiple");
       echo "<h1>Songs:</h1><br>";
-      displaySongs($sought, $dbh);
+      $resultset['5'] = displaySongs($sought, $dbh, "multiple");
       echo "<h1>Albums:</h1><br>";
-      displayAlbums($sought, $dbh);
+      $resultset['6'] = displayAlbums($sought, $dbh, "multiple");
       echo "<h1>Genres:</h1><br>";
-      displayGenres($sought, $dbh);
+      $resultset['7'] = displayGenres($sought, $dbh, "multiple");
 
+      $num0s = 0;
+      $nummultiples = 0;
+      $final = 0;
+      for ($i=1; $i <= 7; $i++) { 
+        if (gettype($resultset[$i]) == "integer" and $resultset[$i] == 0){
+          $num0s++;
+        }
+        else if (gettype($resultset[$i]) == "integer" and $resultset[$i] == -1){
+          $nummultiples++;
+        }
+        else{
+          $final = $resultset[$i];
+        }
+      }
+      if ($num0s == 6 and $nummultiples == 0){
+        header ("Location: " . $final);
+      }
     }
   }
   else{

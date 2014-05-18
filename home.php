@@ -4,13 +4,52 @@ require_once("MDB2.php");
 require_once("/home/cs304/public_html/php/MDB2-functions.php");
 require_once("athomas2-dsn.inc");
 require_once("header.php");
+
 $dbh = db_connect($athomas2_dsn);
 
   checkLogInStatus();
   printPageTop("Home");
   createNavBar($_SERVER['PHP_SELF']);
+?>
+<script src='jquery.tablesorter.js'></script>
+<script>
+$(document).ready(function() 
+    { 
+      $('#nameTable').tablesorter();
+      $('#userTable').tablesorter();
+      $('#movieTable').tablesorter();
+      $('#tvTable').tablesorter();
+      $('#genreTable').tablesorter();
+      $('#albumTable').tablesorter();
+      $('#songTable').tablesorter();
+    } 
+); 
+    
+</script>
+<style>
+.table {
+  width:80%;
+  }
 
-function displayNames($values, $dbh, $status) {
+th.headerSortUp { 
+    background-image: url(desc.jpeg); 
+  background-repeat: no-repeat;
+     
+} 
+th.headerSortDown { 
+    background-image: url(asc.jpeg); 
+  background-repeat: no-repeat;
+    
+} 
+small_desc.gif {
+  padding: 30px;
+margin: 30px;
+align:right;
+  background-color: #ffffff;
+}
+</style>
+<?php
+function displayNames($values, $dbh) {
   $sql = "select * from person where name like concat ('%', ?, '%') order by name";
   $resultset = prepared_query($dbh, $sql, $values);
   $numpeople = $resultset->numRows();
@@ -21,7 +60,7 @@ function displayNames($values, $dbh, $status) {
   }
   else {
     $location;
-  echo "<table border='1'> <tr> <th>Name</th></tr>";
+  echo "<table id='nameTable' class = 'tablesorter table'><thead><tr><th>Name</th></tr></thead><tbody>";
   
   if ($numpeople == 1) {
     while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
@@ -47,7 +86,7 @@ function displayNames($values, $dbh, $status) {
     }
     $location = -1;
   }
-    echo "</table>";
+    echo "</tbody></table>";
     return $location;
   }
 }
@@ -64,7 +103,7 @@ function displayUsers($values,$dbh, $status){
   }
   else {
     $location;
-    echo "<table border='1'><tr><th>Name</th></tr>";
+    echo "<table id='userTable' class='tablesorter table'><thead><tr><th>Name</th></tr></thead><tbody>";
   if($numpeople==1) {
     while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
       $uid = $row['uid'];
@@ -88,7 +127,7 @@ function displayUsers($values,$dbh, $status){
   }
   $location = -1;
 }
-  echo "</table>";
+  echo "</tbody></table>";
   return $location;
 }
 }
@@ -136,7 +175,7 @@ function displayMovies($values, $dbh, $status) {
   }
   else {
     $location;
-  echo "<table border='1'><tr><th>Title</th><th>Genre</th></tr>";
+  echo "<table id='movieTable' class='tablesorter table'><thead><tr><th>Title</th><th>Genre</th></tr></thead><tbody>";
   if($numMovies == 1) {
     while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
       $mid = $row['mid'];
@@ -165,8 +204,9 @@ function displayMovies($values, $dbh, $status) {
   }
   $location = -1;
 }
-  echo "</table>";
+  echo "</table></tbody>";
   return $location;
+
 
 }
 }
@@ -182,9 +222,9 @@ function displayGenres($values, $dbh, $status) {
   else {
 
     $location;
-  echo "<table border='1'><tr><th>Title</th><th>Genre</th></tr>";
-  if($numMedia == 1) {
-    while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
+    echo "<table id='genreTable' class='tablesorter table'><thead><tr><th>Title</th><th>Genre</th></tr></thead><tbody>";
+    if($numMedia == 1) {
+     while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
       $mid = $row['mid'];
       $title = $row['title'];
       $genre = $row['genre'];
@@ -211,7 +251,7 @@ function displayGenres($values, $dbh, $status) {
   }
   $location = -1;
 }
-  echo "</table>";
+  echo "</tbody></table>";
   return $location;
 }
 }
@@ -228,7 +268,7 @@ function displayTVshows($values, $dbh, $status) {
   }
   else {
     $location;
-  echo "<table border='1'><tr><th>Title</th><th>Genre</th></tr>";
+  echo "<table id='tvTable' class='tablesorter table'><thead><tr><th>Title</th><th>Genre</th></tr></thead><tbody>";
   if($numShows == 1) {
     while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
       $mid = $row['mid'];
@@ -257,7 +297,7 @@ function displayTVshows($values, $dbh, $status) {
   }
   $location = -1;
 }
-  echo "</table>";
+  echo "</tbody></table>";
   return $location;
 
 }
@@ -275,7 +315,8 @@ function displayAlbums($values, $dbh, $status) {
   else {
 
     $location;
-  echo "<table border='1'><tr><th>Title</th><th>Genre</th></tr>";
+  echo "<table id='albumTable' class='tablesorter table'><thead><tr><th>Title</th><th>Genre</th></tr></thead><tbody>";
+
   if($numAlbums == 1) {
     while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
       $mid = $row['mid'];
@@ -304,7 +345,7 @@ function displayAlbums($values, $dbh, $status) {
   }
   $location = -1;
 }
-  echo "</table>";
+  echo "</tbody></table>";
   return $location;
 }
 }
@@ -320,7 +361,7 @@ function displaySongs($values, $dbh, $status) {
   else {
 
     $location;
-  echo "<table border='1'><tr><th>Title</th><th>Genre</th></tr>";
+  echo "<table id='songTable' class='tablesorter table'><thead><tr><th>Title</th><th>Genre</th></tr></thead><tbody>";
   if($numSongs == 1) {
     while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
       $mid = $row['mid'];
@@ -349,7 +390,7 @@ function displaySongs($values, $dbh, $status) {
   }
   $location = -1;
 }
-  echo "</table>";
+  echo "</tbody></table>";
   return $location;
 }
 }
@@ -358,17 +399,19 @@ function getTrendingMedia($dbh){
     echo "<h1>Trending Media</h1>";
     $sql = "select likes.mid as mid, count(mid) as count, title from likes inner join media using (mid) group by mid order by count(mid) desc limit 20";    
     $resultset = query($dbh,$sql);
+    echo "<table id='trendingTable' class='tablesorter table';><thead><tr><th>Title</th><th>Likes</th></tr></thead><tbody>";
     while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
       $title= $row['title'];
       $count = $row['count'];
       $mid = $row['mid'];
       if($count==1) {
-	echo"<a href=\"media.php?mid=" . $mid . "\">$title (" . $count . " person likes this)</a><br><br>";
+	echo"<tr><td><a href=\"media.php?mid=" . $mid . "\">$title</a></td><td>" . $count . " person likes this</td></tr>";
       }
       else {
-      echo "<a href= \"media.php?mid=" . $mid . "\">$title (" . $count . " people like this)</a><br><br>";
+      echo "<tr><td><a href= \"media.php?mid=" . $mid . "\">$title</a></td><td>" . $count . " people like this</td></td></tr>";
       }
     }
+    echo "</tbody></table>";
 }
 
 

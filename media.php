@@ -9,7 +9,20 @@ require_once("header.php");
 
 $page = $_SERVER['PHP_SELF'];
 $dbh = db_connect($athomas2_dsn);
+?>
 
+<script src='jquery.tablesorter.js'></script>
+<script>
+$(document).ready(function() 
+    { 
+      $('table').tablesorter();
+     
+    } 
+);
+</script>
+
+
+<?php
 function printJquery() {
 echo '<script>
   $(document).on("ready ajaxSuccess",function (){
@@ -192,12 +205,14 @@ function showRecentMedia($dbh,$page){
   $sql = "select * from media order by dateadded desc limit 10";
   $resultset = query($dbh,$sql);
   echo "Most Recently Added Items<br>";
+  echo "<table class='tablesorter table' style='width:80%;'><thead><tr><th>Title</th><th>Genre</th></tr></thead><tbody>";
   while ($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)){
     $mid = $row['mid'];
     $title = $row['title'];
     $genre = $row['genre'];
-     echo "<a href= \"" . $page . "?mid=" . $mid . "\">$title ($genre)</a><br><br>";
+     echo "<tr><td><a href= \"" . $page . "?mid=" . $mid . "\">$title</a></td><td>" . $genre . "</td><tr>";
   }
+  echo "</tbody></table>";
 }
 
 function addMediaButton($dbh, $page, $mid, $uid){

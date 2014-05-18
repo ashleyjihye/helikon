@@ -7,11 +7,9 @@ require_once("header.php");
 
 
 printPageTop("Helikon");
+checkLogInStatus();
 logIn();
 signIn();
-
-
- 
 
 ?>
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.js"></script>

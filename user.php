@@ -57,6 +57,53 @@ function getLikesOwner($values, $dbh) {
    echo "</ol><input type='submit' value='Make Changes'></form><br><br>";
 }
 
+function processPicture($uid, $dbh){
+
+  $destfile = "";
+
+  if (isset($_FILES['imagefile'])){
+  
+    if( $_FILES['imagefile']['error'] != UPLOAD_ERR_OK ) {
+        print "<P>Upload error: " . $_FILES['imagefile']['error'];
+    } 
+    else {
+
+      // image was successfully uploaded.  
+      $name = $_FILES['imagefile']['name'];
+      $type = $_FILES['imagefile']['type'];
+      $tmp  = $_FILES['imagefile']['tmp_name'];
+
+      $destdir = "userimages/";
+      $destfilename = "$uid.jpg";
+      $destfile = $destdir . $destfilename;
+
+      $sql = "UPDATE user SET picture = 'y' WHERE uid = ?";
+
+      if(move_uploaded_file($tmp, $destfile)) {
+        prepared_statement($dbh,$sql,$uid);
+      } 
+      else {
+        print "<p>Error moving $tmp\n";
+      }
+    }
+  }
+
+  else {
+    $destfile = getUserPicture($uid,$dbh);
+  }
+
+  return $destfile;
+}
+
+function printPictureForm(){
+  echo '<form method="post"
+      enctype="multipart/form-data"
+      action="user.php">
+      <p>Upload Profile Picture: <input type="file" name="imagefile" size="50">
+      <p><input type="submit">
+      </form>';
+}
+
 function addFriendButton($page, $array, $username){
   if ($username != $array['username']){
     $uid = $array['uid'];
@@ -178,6 +225,11 @@ if ($userarray == null){
   createNavBar("home.php");
   echo "<h1>$name's Profile</h1>";
 
+  $destfile = processPicture($pageuid,$dbh);
+  if( $destfile != "") {
+    echo "<p><img width=200 height=200 src='$destfile'><p>\n";
+  }
+
   if (isset($_REQUEST['addfriend'])){
     requestFriend($dbh, $userarray, $username);
   }
@@ -208,6 +260,7 @@ if ($userarray == null){
   }
 
 if ($pageuid == getUid($dbh,$username)){
+  printPictureForm();
   getLikesOwner($pageuid,$dbh);
   getFriendRequests($dbh,$page,$username);
 }

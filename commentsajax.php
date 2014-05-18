@@ -52,14 +52,17 @@ function getLastComment($dbh){
 	$uid = $row['uid'];
 	$mid = $row['mid'];
 
+  $picture = getUserPicture($uid,$dbh);
+
   echo '<div class="media"><a class="pull-left" href="user.php?uid=' . $uid . '">
-    <img class="media-object" src="adele.jpg" alt="Media Object"></a>
+    <img width=70 height=70 class="media-object" src="' . $picture . '" alt="Media Object"></a>
     <div class="media-body">
     <h4 class="media-heading">' . $name . '</h4> at ' . $time . '<br>' . $comment . '
     <br><span class="comment-reply" style="color:blue"; >Reply</span>
     <br><div class="replyform"><form class="commentform" method="get" action="media.php">
     <input type="hidden" name="mid" value="' . $mid . '">
     <input type="hidden" name="rid" value="' . $rid . '">
+    <input type="hidden" name="uid" value="' . $uid . '">
     <textarea rows="1" cols="50" id="comment" name="comment"></textarea><br>
     <input type="hidden" name="addcomment">
     </form></div><br></div></div>';

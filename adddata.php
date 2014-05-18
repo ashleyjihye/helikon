@@ -157,6 +157,7 @@ require_once("header.php");
      <form id="actorform" method="get" action="<?php echo $_SERVER['PHP_SELF']?>">
       <input type="hidden" name="type" value="person">
     <p>Name <input required type="text" name="name">
+  <p>Description<p> <textarea rows="4" cols="50" name="description"></textarea>
   <p>Media:
   <table style="padding-bottom:20px">
   <tr><th>Title</th><th>Type</th></tr>
@@ -233,7 +234,7 @@ require_once('athomas2-dsn.inc');
 
 //query statements
 $dbh = db_connect($athomas2_dsn);
-$person = "Insert into person (name,addedby) values (?,?)";
+$person = "Insert into person (name,addedby,description) values (?,?,?)";
 $media = "Insert into media (title, genre, length, type, albumid, dateadded,addedby, rating, description) values (?,?,?,?,?,?,?,0,?)";
 $contribution = "Insert into contribution values (?,?)";
 $findmedia = "Select * from media where title = ?";
@@ -256,7 +257,8 @@ else if (!empty($_REQUEST['type'])){
   if ($type == 'person'){
     //get user-inputted name and enter into database if not exists yet
     $name = htmlspecialchars($_REQUEST['name']);
-    $personid = addPerson($dbh, $name, $uid, $findperson, $person);
+    $description = htmlspecialchars($_REQUEST['description']);
+    $personid = addPerson($dbh, $name, $uid, $description, $findperson, $person);
     $mediacount = 1;
 
     //for each piece of media, associate the media and person only if media already exists in the database
@@ -286,7 +288,7 @@ else if (!empty($_REQUEST['type'])){
     $actorcount = 1;
     while ($actorcount <= 6 and htmlspecialchars($_REQUEST['mediaactor' . $actorcount]) != ""){
       $name = htmlspecialchars($_REQUEST['mediaactor' . $actorcount]);
-      $personid = addPerson($dbh, $name, $uid, $findperson, $person);
+      $personid = addPerson($dbh, $name, $uid, null, $findperson, $person);
       addContribution($dbh, $mediaid, $personid, $title, $name, $findcontribution, $contribution);
       $actorcount++;
     }
@@ -302,7 +304,7 @@ else if (!empty($_REQUEST['type'])){
     $albumid = NULL;
 
     //add person if they don't already exist in database
-    $personid = addPerson($dbh, $artist, $uid, $findperson, $person);
+    $personid = addPerson($dbh, $artist, $uid, null, $findperson, $person);
 
     //if the song has an associated album, add that and add a contribution between person and album
     if (isset($_REQUEST['songalbum']) && htmlspecialchars($_REQUEST['songalbum']) != ""){
@@ -322,7 +324,7 @@ else if (!empty($_REQUEST['type'])){
   else if ($type == 'album'){
     //add artist or check for existing artist
     $artist = htmlspecialchars($_REQUEST['albumartist']);
-    $personid = addPerson($dbh, $artist, $uid, $findperson, $person);
+    $personid = addPerson($dbh, $artist, $uid, null, $findperson, $person);
 
     //add album or check for existing album, and create contribution between album and person if none exists
     $title = htmlspecialchars($_REQUEST['albumtitle']);

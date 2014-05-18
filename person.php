@@ -9,13 +9,15 @@ $page = $_SERVER['PHP_SELF'];
 $dbh = db_connect($athomas2_dsn);
 
 function getPerson($values, $dbh) {
-   $sql = "select name from person where pid=?";
+   $sql = "select * from person where pid=?";
    $resultset = prepared_query($dbh, $sql, $values);
    $numRows = $resultset->numRows();
    if ($numRows != 0){
      $detailrow = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC);
      $name = $detailrow['name'];
-     return $name;
+     $description = $detailrow['description'];
+     $picture = $detailrow['picture'];
+     return array('name'=>$name, 'description'=>$description, 'picture' =>$picture);
    }
    else{
     return null;
@@ -68,15 +70,19 @@ function getPersonContributions($values,$dbh,$page){
   return array('numRows'=>$numRows,'mediacontributions'=>$mediacontributions);
 }
 
-function editPersonPage($pagepid, $name){
+function editPersonPage($pagepid, $name, $description){
   global $page, $dbh;
+  echo "<div id='hidden' style='display: none;'>";
   $contributionarray = getPersonContributions($pagepid, $dbh, $page);
+  echo "</div>";
   $mediacontributions = $contributionarray['mediacontributions'];
-  echo '<form method="post" action="' . $page . '">
+  echo '<form method="post" action="' . $page . '" enctype="multipart/form-data">
   <input type="hidden" name="pid" value="' . $pagepid . '">
   <input type="hidden" name="edited">
+  <p>Upload Picture: <input type="file" name="imagefile" size="50"><p>
 
-  Name: <input type="text" name="name" value="' . $name . '"><br>';
+  Name: <input type="text" name="name" value="' . $name . '"><br>
+  Description: <textarea rows="4" cols="50" name="description">' . $description . '</textarea><br>';
 
   echo '<br>Delete Contributions: <br>';
   $counter = 0;
@@ -101,12 +107,51 @@ function editPersonPage($pagepid, $name){
   echo '<br><input type="submit" value="Make Changes"></form>';
 }
 
+function processPicture($pid, $dbh){
+
+  $destfile = "";
+
+  if (isset($_FILES['imagefile'])){
+    if( $_FILES['imagefile']['error'] != UPLOAD_ERR_OK ) {
+        print "<P>Upload error: " . $_FILES['imagefile']['error'];
+    } 
+    else {
+
+      // image was successfully uploaded.  
+      $name = $_FILES['imagefile']['name'];
+      $type = $_FILES['imagefile']['type'];
+      $tmp  = $_FILES['imagefile']['tmp_name'];
+
+      $destdir = "personimages/";
+      $destfilename = "$pid.jpg";
+      $destfile = $destdir . $destfilename;
+
+      $sql = "UPDATE person SET picture = 'y' WHERE pid = ?";
+
+      if(move_uploaded_file($tmp, $destfile)) {
+        prepared_statement($dbh,$sql,$pid);
+      } 
+      else {
+        print "<p>Error moving $tmp\n";
+      }
+    }
+  }
+
+  else {
+    $destfile = getPersonPicture($pid,$dbh);
+  }
+
+  return $destfile;
+}
+
 
 checkLogInStatus();   
 
 if (isset($_REQUEST['pid'])){
-  $pagepid = $_REQUEST['pid'];
-  $name = getPerson($pagepid,$dbh);
+  $pagepid = htmlspecialchars($_REQUEST['pid']);
+  $personarray = getPerson($pagepid,$dbh);
+  $name = $personarray['name'];
+  $description = $personarray['description'];
   if ($name == null){
     header("Location: person.php");
     exit();
@@ -116,7 +161,8 @@ if (isset($_REQUEST['pid'])){
   createNavBar("home.php");
 
   if (isset($_REQUEST['edited'])){
-    $name = $_REQUEST['name'];
+    $name = htmlspecialchars($_REQUEST['name']);
+    $description = htmlspecialchars($_REQUEST['description']);
     echo '<div id="results" style="display: none;">';
     $contributionarray = getPersonContributions($pagepid, $dbh, $page);
     echo '</div>';
@@ -125,7 +171,7 @@ if (isset($_REQUEST['pid'])){
     $deletecontributionarray = array();
     for ($i=0; $i < $numContributions; $i++) { 
       if (isset($_REQUEST['media' . $counter])){
-       $deletecontributionarray[$counter] = $_REQUEST['media' . $counter];
+       $deletecontributionarray[$counter] = htmlspecialchars($_REQUEST['media' . $counter]);
      }
       $counter++;
     }
@@ -133,29 +179,36 @@ if (isset($_REQUEST['pid'])){
     $addcontributionarray = array();
     $addcontributiontypearray = array();
     for ($counter = 0; $counter < 5; $counter++){
-      if (isset($_REQUEST['newmedia' . $counter]) and $_REQUEST['newmedia' . $counter] != ""){
-        $addcontributionarray[$counter] = $_REQUEST['newmedia' . $counter];
-        $addcontributiontypearray[$counter] = $_REQUEST['newmediatype' . $counter];
+      if (isset($_REQUEST['newmedia' . $counter]) and htmlspecialchars($_REQUEST['newmedia' . $counter]) != ""){
+        $addcontributionarray[$counter] = htmlspecialchars($_REQUEST['newmedia' . $counter]);
+        $addcontributiontypearray[$counter] = htmlspecialchars($_REQUEST['newmediatype' . $counter]);
       }
       else {
         break;
       }
     }
 
-    editPerson($pagepid, $name, $deletecontributionarray, $addcontributionarray, $addcontributiontypearray);
-    $name = getPerson($pagepid,$dbh);
+    editPerson($pagepid, $name, $description, $deletecontributionarray, $addcontributionarray, $addcontributiontypearray);
+    $personarray = getPerson($pagepid,$dbh);
+    $name = $personarray['name'];
+    $description = $personarray['description'];
   }
 
 
 
   if (isset($_REQUEST['edit'])){
     echo '<h1>' . $name . '</h1>';
-    editPersonPage($pagepid, $name);
+    editPersonPage($pagepid, $name,$description);
   }
 
   else{
+    $picture = processPicture($pagepid,$dbh);
     echo '<h1>' . $name . ' <button onclick="location.href=\'' . $page . '?pid=' . $pagepid . '&edit\'">
      edit</button></h1>';
+    if ($picture != ""){
+      echo "<p><img width=200 height=200 src='$picture'><p>\n";
+    }
+     echo "Description: $description<br><br>";
     getPersonContributions($pagepid,$dbh,$page);
   }
 }

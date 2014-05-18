@@ -39,6 +39,7 @@ create table friends (
 create table person (
        pid int not null primary key auto_increment,
        name varchar(50),
+       description varchar(400),
        picture enum('y','n') -- picture will be a string that is a link to this person's picture
 )
 	ENGINE = InnoDB;
@@ -48,7 +49,7 @@ create table media (
        rating tinyint(1),
        title varchar(50),
        dateadded datetime,
-       characteristics varchar(200),
+       description varchar(400),
        genre enum('action','comedy','adventure','documentary','drama','mystery','reality','sitcom','anime','children','classic','faith','foreign','horror','independent','musical','romance','scifi','fantasy','romance','thriller','medical','procedural','hiphop','pop','classical','jazz','rap','country','alternative','faith','rock','blues','children','dance','electronic','easy listening','r&b','soul','reggae','metal','soundtrack','foreign','indie','kpop','dubstep'),
        length varchar(20),
        preview varchar(200), -- will have a link to a video or stream of the media

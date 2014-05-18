@@ -24,14 +24,6 @@ function getUser($values, $dbh) {
    }
 }
 
-function getUid($dbh, $username) {
-  $sql = "select uid from user where username = ?";
-  $resultset = prepared_query($dbh, $sql, $username);
-  $detailrow = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC);
-  $uid = $detailrow['uid'];
-  return $uid;
-}
-
 function getLikes($values, $dbh) {
    $sql = "select title, type, likes.dateadded from user inner join likes using (uid) inner join media using (mid) where user.uid=? order by likes.dateadded desc limit 10";
    $resultset = prepared_query($dbh, $sql, $values);
@@ -54,11 +46,13 @@ function getLikesOwner($values, $dbh) {
    $sql = "select mid, title, type, likes.dateadded from user inner join likes using (uid) inner join media using (mid) where user.uid=? order by likes.dateadded desc limit 10";
    $resultset = prepared_query($dbh, $sql, $values);
    echo "<form type='get' action='user.php'><input type='hidden' name='uid' value='" . $values . "'>Current Top Ten:<p><ol>";
+   $counter = 0;
    while($detailrow = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
      $title = $detailrow['title'];
      $type = $detailrow['type'];
      $mid = $detailrow['mid'];
-   echo "<li>$title ($type) <input type='checkbox' name='delete' value='" . $mid . "'>Delete?</li><br>";
+     echo "<li>$title ($type) <input type='checkbox' name='delete" . $counter . "' value='" . $mid . "'>Delete?</li><br>";
+     $counter++;
    }
    echo "</ol><input type='submit' value='Make Changes'></form><br><br>";
 }
@@ -207,8 +201,10 @@ if ($userarray == null){
     addFriendButton($page,$userarray,$username);
   }
 
-  if (isset($_REQUEST['delete'])){
-    deleteLike($dbh,array($pageuid,$_REQUEST['delete']));
+  for ($i=0; $i < 10; $i++) { 
+    if (isset($_REQUEST['delete' . $i])){
+      deleteLike($dbh,array($pageuid,$_REQUEST['delete' . $i]));
+    }
   }
 
 if ($pageuid == getUid($dbh,$username)){

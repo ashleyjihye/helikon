@@ -9,23 +9,10 @@ require_once("header.php");
 
 $page = $_SERVER['PHP_SELF'];
 $dbh = db_connect($athomas2_dsn);
-?>
 
-<script src='jquery.tablesorter.js'></script>
-<script>
-$(document).ready(function() 
-    { 
-      $('table').tablesorter();
-     
-    } 
-);
-</script>
-
-
-<?php
 function printJquery() {
 echo '<script>
-  $(document).on("ready ajaxSuccess",function (){
+  $(document).ready(function (){
     $(".comment-reply").hover(function(){
        $(this).css("color","pink");},function(){
         $(this).css("color","blue");
@@ -38,34 +25,10 @@ echo '<script>
       console.log($(this));
       var thetextbox = $(this).find("#comment");
       data = $(e.target).closest(".commentform").serialize();
+      var data1 = data;
       console.log(data);
 
       var media = $(this).closest(".media-body");
-      console.log("will append to "+media);
-      $.ajax({
-        type: "POST",
-        url: "commentsajax.php",
-        data: data,
-        success: function(data){
-          $(media).append(data);
-          $(thetextbox).val("");
-          $(".replyform").hide();
-        },
-        error: function(jqXHR, textStatus, errorThrown){
-          alert(textStatus);
-        }
-      });
-    });
-
-     $(".commentform1").submit(function(e){
-      console.log("Submitting form by Ajax1");
-      e.preventDefault();
-      console.log($(this));
-      var thetextbox = $(this).find("#comment");
-      data = $(e.target).closest(".commentform1").serialize();
-      console.log(data);
-
-      var media = $(this).closest(".replyform1");
       console.log("will append to "+media);
       $.ajax({
         type: "POST",
@@ -196,14 +159,12 @@ function showRecentMedia($dbh,$page){
   $sql = "select * from media order by dateadded desc limit 10";
   $resultset = query($dbh,$sql);
   echo "Most Recently Added Items<br>";
-  echo "<table class='tablesorter table' style='width:80%;'><thead><tr><th>Title</th><th>Genre</th></tr></thead><tbody>";
   while ($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)){
     $mid = $row['mid'];
     $title = $row['title'];
     $genre = $row['genre'];
-     echo "<tr><td><a href= \"" . $page . "?mid=" . $mid . "\">$title</a></td><td>" . $genre . "</td><tr>";
+     echo "<a href= \"" . $page . "?mid=" . $mid . "\">$title ($genre)</a><br><br>";
   }
-  echo "</tbody></table>";
 }
 
 function addMediaButton($dbh, $page, $mid, $uid){
@@ -298,14 +259,13 @@ function showComments($page, $dbh, $mid, $pageuid){
   echo "</div><br><br>";
 }
 
-function commentForm($page, $mid, $uid){
-  echo '<div class="replyform1"><form class="commentform1" method="get" action="' . $page . '">
-        <input type="hidden" name="mid" value="' . $mid . '">
-        <input type="hidden" name="uid" value="' . $uid . '">
-        <textarea rows="4" cols="50" id="comment" name="comment"></textarea><br>
-        <input type="hidden" name="addcomment">
-        <input type="submit" value="Add Comment" class="btn btn-primary btn-lg">
-        </form></div><br>';
+function commentForm($page, $mid){
+  echo '<form id="commentform" method="post" action="' . $page . '">
+      <input type="hidden" name="mid" value="' . $mid . '">
+      <textarea rows="4" cols="50" name="comment"></textarea><br>
+    <input type="hidden" name="addcomment">
+    <input type="submit" value="Add Comment" class="btn btn-primary btn-lg">
+  </form><br>';
 }
 
 function addComment($dbh, $mid, $uid, $parentrid, $comment){
@@ -534,7 +494,22 @@ if (isset($_REQUEST['mid'])){
 
 
 
-      commentForm($page, $pagemid, $uid);
+
+      if (isset($_REQUEST['addcomment'])){
+        $comment = htmlspecialchars($_REQUEST['comment']);
+        if (isset($_REQUEST['rid'])){
+          $parentrid = htmlspecialchars($_REQUEST['rid']);
+        }
+        else{
+          $parentrid = null;
+        }
+        addComment($dbh, $pagemid, $uid, $parentrid, $comment);
+      }
+
+
+
+
+      commentForm($page, $pagemid);
       showComments($page,$dbh,$pagemid, $uid);
 
     }

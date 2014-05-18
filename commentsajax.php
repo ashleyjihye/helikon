@@ -15,8 +15,14 @@ function addComment($dbh, $mid, $uid, $parentrid, $comment){
   }
    $sql = "select rid from reviews order by rid desc limit 1";
    $resultset = query($dbh,$sql);
-   $row1 = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC);
-   $rid = $row1['rid'] + 1;
+   $numRows = $resultset->numRows();
+   if ($numRows == 0){
+    $rid = 1;
+   }
+   else{
+    $row1 = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC);
+    $rid = $row1['rid'] + 1;
+  }
    if ($parentrid == null){
     $parentrid = $rid;
    }
@@ -56,20 +62,20 @@ function getLastComment($dbh){
     <input type="hidden" name="rid" value="' . $rid . '">
     <textarea rows="1" cols="50" id="comment" name="comment"></textarea><br>
     <input type="hidden" name="addcomment">
-    <input type="submit" name="submit">
     </form></div><br></div></div>';
 }
 
 if (isset($_REQUEST['addcomment'])){
-  $comment = $_REQUEST['comment'];
+  $comment = htmlspecialchars($_REQUEST['comment']);
   if (isset($_REQUEST['rid'])){
-    $parentrid = $_REQUEST['rid'];
+    $parentrid = htmlspecialchars($_REQUEST['rid']);
   }
   else{
     $parentrid = null;
   }
-  addComment($dbh, $_REQUEST['mid'], $_REQUEST['uid'], $parentrid, $_REQUEST['comment']);
+  addComment($dbh, htmlspecialchars($_REQUEST['mid']), htmlspecialchars($_REQUEST['uid']), $parentrid, htmlspecialchars($_REQUEST['comment']));
 }
+
 
 getLastComment($dbh);
 

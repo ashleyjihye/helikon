@@ -14,8 +14,58 @@ signIn();
  
 
 ?>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.js"></script>
+<script>
+$(document).ready(function(){
+$('#username').keyup(username_check);
+});
 	
+function username_check(){	
+var username = $('#username').val();
+if(username == "" || username.length < 4){
+$('#username').css('border', '3px #CCC solid');
+$('#tick').hide();
+}else{
+
+jQuery.ajax({
+   type: "POST",
+   url: "check2.php",
+   data: 'username='+ username,
+   cache: false,
+   success: function(response){
+if(response == 1){
+	$('#username').css('border', '3px #C33 solid');	
+	$('#tick').hide();
+	$('#cross').fadeIn();
+	}else{
+	$('#username').css('border', '3px #090 solid');
+	$('#cross').hide();
+	$('#tick').fadeIn();
+	     }
+
+}
+});
+}
+
+
+
+}
+
+</script>
+
 <style type="text/css">
+#tick {
+  display:none;
+
+
+}
+#cross {
+display:none;
+
+}
+       
+
+
 #intro { 
   background: url() 50% 0 fixed; 
   height: auto;  
@@ -103,8 +153,11 @@ signIn();
 			<div class="row-fluid">
 		        <div class="span4 well">
 		          <h2>Helikon</h2>
-		          <p>Contect with your friends view media etc etc </p>
-		          <p><a class="btn btn-success" href="#">View details &raquo;</a></p>
+		          <ul><li>Connect with your friends
+<li>See what your friends are watching and listening to
+<li>Add your favorite media to your favorites list and share that list with your friends!
+</ul>
+		         
 		        </div><!-- /.span4 -->
 		      
 	
@@ -130,8 +183,25 @@ signIn();
 <div style="text align: center; width:400px; margin: auto; margin-top: 20px; margin-bottom: 20px;" class="form=group">
     <label style="padding: 1px;" for="email" class="col-sm-2 control-label">Email</label> <div style="margin-top:10px;" class="col-sm-10"><input type="text" class="form-control" name="email" id="email"></div></div>
 
-<div style="text align: center; width:400px; margin: auto; margin-top: 20px; marign-bottom: 20px;" class="form=group">
-  <label style="padding: 1px;" for="username" class="col-sm-2 control-label">Username</label> <div style="margin-top: 10px;" class="col-sm-10"><input type="text" class="form-control" name="username" id="username"></div></div>
+
+
+<div style="text align: center; width:400px; margin: auto; margin-top: 20px; margin-bottom: 20px;" class="form=group">
+
+
+  <label style="padding: 1px;" for="username" class="col-sm-2 control-label">Username</label> 
+
+
+   <div style="margin-top: 10px;" class="col-sm-10"><input style="display:inline; width:93%;" type="text" class="form-control" name="username" id="username">
+
+<img id="tick" src="tick.png" width="16" height="16"/>
+<img id="cross" src="cross.png" width="16" height="16"/>
+</div></div>
+
+
+
+
+
+
 
 <div style="text-align:center; width: 400px; margin: auto; margin-top: 20px; margin-bottom:20px;" class="form-group">
   <label style="padding: 1px;" for="password" class="col-sm-2 control-label">Password</label> <div style="margin-top: 10px;" class="col-sm-10"><input type="password" class="form-control" name="password" id="password"></div></div>

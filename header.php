@@ -148,7 +148,6 @@ echo '<nav class="navbar navbar-default" role="navigation">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown">Account<b class="caret"></b></a>
           <ul class="dropdown-menu">
             <li><a href="user.php">My Profile</a></li>
-            <li><a href="home.php?friends">Friends</a></li>
             <li><a href="adddata.php">Add to Database</a></li>
             <li class="divider"></li>
             <li><a href="' . $page . '?logout">Logout</a></li>
@@ -412,6 +411,16 @@ function editPerson($pid, $name, $description, $deletecontributionarray, $addcon
   }
 
   echo "</div>";
+}
+
+function getAlbumSongContributions($dbh, $mid){
+  $sql = "select pid, name from person inner join contribution using (pid) where mid = ?";
+  $resultset = prepared_query($dbh,$sql,$mid);
+  while ($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)){
+    $pid = $row['pid'];
+    $name = $row['name'];
+    return array('pid'=>$pid, 'name'=>$name);
+  }
 }
 
 

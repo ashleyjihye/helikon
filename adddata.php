@@ -60,7 +60,14 @@ require_once("header.php");
 
 </script>
 
-  <h2 class= "title" >Add Data to the Database </h2>
+<style>
+.form-control{
+  width:80%;
+  }
+</style>
+
+
+ <h2 class= "title" >Add Data to the Database </h2>
 
 
 <div id="myTab">
@@ -77,132 +84,199 @@ require_once("header.php");
 <div class="tab-content">
   <div class="tab-pane fade in active" id="song">
     <br>
-      <form id="songform" method="get" action="<?php echo $_SERVER['PHP_SELF']?>">
-    <p>Title <input required type="text" name="songtitle">
-  <p>Artist <input required type="text" name="songartist">
-  <p>Length <input type="text" name="songlength">
-  <p>Album <input type="text" name="songalbum">
-  <p>Genre <input required type="text" name="songgenre">
-  <p>Description<p> <textarea rows="4" cols="50" name="description"></textarea>
+    
+      <form class="form-horizontal" id="songform" method="get" action="<?php echo $_SERVER['PHP_SELF']?>">
+<div class="form-group">
+    <label for="inputTitle" class="col-sm-2 control-label">Title</label>
+<div class="col-sm-10">
+    <input required type="text" class="form-control" name="songtitle">
+</div>
+<label for="inputArtist" class="col-sm-2 control-label">Artist</label>
+<div class="col-sm-10">
+    <input required type="text" class="form-control" name="songartist">
+</div>
+<label for="inputLength" class="col-sm-2 control-label">Length</label>
+<div class="col-sm-10">
+ <input type="text" class="form-control" name="songlength">
+</div>
+<label for="inputAlbum" class="col-sm-2 control-label">Album</label>
+<div class="col-sm-10">
+  <input type="text" class="form-control"name="songalbum">
+</div>
+<label for="inputGenre" class="col-sm-2 control-label">Genre</label>
+<div class="col-sm-10">
+  <input required type="text" class="form-control" name="songgenre">
+</div>
+<label for="inputDescription" class="col-sm-2 control-label">Description</label>
+<div class="col-sm-10">
+  <textarea class="form-control" rows="4" cols="50" name="description"></textarea>
+</div>
     <input type="hidden" name="type" value="song">
     <br><br>
-    <input type="submit">
-  <input type="reset">
-  </form>
+<div class="col-sm-10">
+    <input type="submit" class="btn btn-default">
+  <input type="reset" class="btn btn-default">
+</div>
+</form>
   </div>
+</div>
 
 
   <div class="tab-pane fade" id="album">
     <br>
-    <form id="albumform" method="get" action="<?php echo $_SERVER['PHP_SELF']?>">
+    <form class="form-horizontal" id="albumform" method="get" action="<?php echo $_SERVER['PHP_SELF']?>">
+<div class="form-group">
 <input type="hidden" name="type" value="album">
-    <p>Title <input required type="text" name="albumtitle">
-  <p>Artist <input required type="text" name="albumartist">
-  <p>Length <input type="text" name="albumlength">
-  <p>Genre <input required type="text" name="albumgenre">   
-  <p>Description<p> <textarea rows="4" cols="50" name="description"></textarea>
-  <p>Songs:
-  <table style="padding-bottom:20px">
+<label for="inputTitle" class="col-sm-2 control-label">Title</label>
+  <div class="col-sm-10">
+    <input required type="text" class="form-control" name="albumtitle">
+</div>
+<label for="inputArtist" class="col-sm-2 control-label">Artist</label>
+<div class="col-sm-10">
+ <input required type="text" class="form-control" name="albumartist">
+    </div>
+<label for="inputLength" class="col-sm-2 control-label">Length</label>
+<div class="col-sm-10">
+  <input type="text" class="form-control" name="albumlength">
+</div>
+<label for="inputGenre" class="col-sm-2 control-label">Genre</label>
+<div class="col-sm-10">
+   <input required type="text" class="form-control" name="albumgenre">   
+</div>
+<label for="inputDescrption" class="col-sm-2 control-label">Description</label>
+  <div class="col-sm-10"><textarea rows="4" cols="50" name="description" class="form-control"></textarea></div>
+    <label for="inputSongs" class="col-sm-2 control-label">Songs</label>
+
+  <table style="width:60%;" class="table">
+<div class="col-10-sm">
   <tr><th>Song</th><th>Length</th></tr>
-  <tr><td><input type="text" name="song1"></td><td><input type="text" name="length1"></td></tr>
-  <tr><td><input type="text" name="song2"></td><td><input type="text" name="length2"></td></tr>
-  <tr><td><input type="text" name="song3"></td><td><input type="text" name="length3"></td></tr>
-  <tr><td><input type="text" name="song4"></td><td><input type="text" name="length4"></td></tr>
-  <tr><td><input type="text" name="song5"></td><td><input type="text" name="length5"></td></tr>
-  <tr><td><input type="text" name="song6"></td><td><input type="text" name="length6"></td></tr>
-  <tr><td><input type="text" name="song7"></td><td><input type="text" name="length7"></td></tr>
-  <tr><td><input type="text" name="song8"></td><td><input type="text" name="length8"></td></tr>
-  <tr><td><input type="text" name="song9"></td><td><input type="text" name="length9"></td></tr>
-  <tr><td><input type="text" name="song10"></td><td><input type="text" name="length10"></td></tr>
-  <tr><td><input type="text" name="song11"></td><td><input type="text" name="length11"></td></tr>
-  <tr><td><input type="text" name="song12"></td><td><input type="text" name="length12"></td></tr>
-  <tr><td><input type="text" name="song13"></td><td><input type="text" name="length13"></td></tr>
-  <tr><td><input type="text" name="song14"></td><td><input type="text" name="length14"></td></tr>
+  <tr><td><input type="text" name="song1" class="form-control"></td><td><input type="text" name="length1" class="form-control"></td></tr>
+  <tr><td><input type="text" name="song2" class="form-control"></td><td><input type="text" name="length2" class="form-control"></td></tr>
+  <tr><td><input type="text" name="song3" class="form-control"></td><td><input type="text" name="length3" class="form-control"></td></tr>
+  <tr><td><input type="text" name="song4" class="form-control"></td><td><input type="text" name="length4" class="form-control"></td></tr>
+  <tr><td><input type="text" name="song5" class="form-control"></td><td><input type="text" name="length5" class="form-control"></td></tr>
+  <tr><td><input type="text" name="song6" class="form-control"></td><td><input type="text" name="length6" class="form-control"></td></tr>
+  <tr><td><input type="text" name="song7" class="form-control"></td><td><input type="text" name="length7" class="form-control"></td></tr>
+  <tr><td><input type="text" name="song8" class="form-control"></td><td><input type="text" name="length8" class="form-control"></td></tr>
+  <tr><td><input type="text" name="song9" class="form-control"></td><td><input type="text" name="length9" class="form-control"></td></tr>
+  <tr><td><input type="text" name="song10" class="form-control"></td><td><input type="text" name="length10" class="form-control"></td></tr>
+  <tr><td><input type="text" name="song11" class="form-control"></td><td><input type="text" name="length11" class="form-control"></td></tr>
+  <tr><td><input type="text" name="song12" class="form-control"></td><td><input type="text" name="length12" class="form-control"></td></tr>
+  <tr><td><input type="text" name="song13" class="form-control"></td><td><input type="text" name="length13" class="form-control"></td></tr>
+  <tr><td><input type="text" name="song14" class="form-control"></td><td><input type="text" name="length14" class="form-control"></td></tr>
   </table>
-  <br><br>
-  <input type="submit">
-  <input type="reset">
+
+  
+<div class="col-sm-10">
+  <input type="submit" class="btn btn-default">
+  <input type="reset" class="btn btn-default">
+</div>
   </form>
 </div>
-
+</div>
 
   <div class="tab-pane fade" id="moviesandtv">
     <br>
-     <form id="moviesandtvform" method="get" action="<?php echo $_SERVER['PHP_SELF']?>">
+     <form class="form-horizontal" id="moviesandtvform" method="get" action="<?php echo $_SERVER['PHP_SELF']?>">
+<div class="form-group">
       <input type="hidden" name="type" value="moviesandtv">
-  Type: <select name="mediatype">
+<label for="inputType" class="col-sm-2 control-label">Type</label>
+<div class="col-sm-10">
+  <select name="mediatype" class="form-control">
   <option value="tv">TV
   <option value="movie">Movie
   </select>
-  <p>Title <input required type="text" name="title">
-  <p>Length <input type="text" name="length">
-  <p>Genre <input required type="text" name="genre">  
-  <p>Description<p> <textarea rows="4" cols="50" name="description"></textarea>
-  <p>Actors:
-    <p><input type="text" name="mediaactor1">
-    <p><input type="text" name="mediaactor2">
-    <p><input type="text" name="mediaactor3">
-    <p><input type="text" name="mediaactor4">
-    <p><input type="text" name="mediaactor5">
-    <p><input type="text" name="mediaactor6">
+</div>
+<label for="inputTitle" class="col-sm-2 control-label">Title</label>
+<div class="col-sm-10">
+  <input required type="text" name="title" class="form-control">
+</div>
+<label for="inputLength" class="col-sm-2 control-label">Length</label>
+<div class="col-sm-10">
+ <input type="text" name="length" class="form-control">
+</div>
+<label for="inputGenre" class="col-sm-2 control-label">Genre</label>
+<div class="col-sm-10">
+  <input required type="text" name="genre" class="form-control">  
+</div>
+<label for="inputDescription" class="col-sm-2 control-label">Description</label>
+<div class="col-sm-10">
+  <textarea rows="4" cols="50" name="description" class="form-control"></textarea>
+</div>
+ <label for="inputActors" class="col-sm-2 control-label">Actors</label>
+    <div class="col-sm-10">
+    <input type="text" name="mediaactor1" class="form-control">
+    <input type="text" name="mediaactor2" class="form-control">
+    <p><input type="text" name="mediaactor3" class="form-control">
+    <p><input type="text" name="mediaactor4" class="form-control">
+    <p><input type="text" name="mediaactor5" class="form-control">
+    <p><input type="text" name="mediaactor6" class="form-control">
       <br><br>
-    <input type="submit">
-    <input type="reset">
+    <input type="submit" class="btn btn-default">
+    <input type="reset" class="btn btn-default">
+</div>
     </form>
     </div>
+</div>
 
 
   <div class="tab-pane fade" id="actor">
     <br>
-     <form id="actorform" method="get" action="<?php echo $_SERVER['PHP_SELF']?>">
+     <form id="actorform" class="form-horizontal" method="get" action="<?php echo $_SERVER['PHP_SELF']?>">
+<div class="form-group">
       <input type="hidden" name="type" value="person">
-    <p>Name <input required type="text" name="name">
-  <p>Description<p> <textarea rows="4" cols="50" name="description"></textarea>
-  <p>Media:
-  <table style="padding-bottom:20px">
+<label for="inputName" class="col-sm-2 control-label">Name</label>
+    <div class="col-sm-10"><input required type="text" class="form-control" name="name"></div>
+<label for="inputDescription" class="col-sm-2 control-label">Description</label>
+  <div class="col-sm-10"><textarea rows="4" cols="50" class="form-control" name="description"></textarea></div>
+<label for="inputMedia" class="col-sm-2 control-label">Media</label>
+ <div class="col-sm-10">
+  <table class="table" style="width: 80%;">
   <tr><th>Title</th><th>Type</th></tr>
-    <tr><td><input type="text" name="media1"></td>
-      <td><select name="personmediatype1" id="personmediatype">
+    <tr><td><input type="text" name="media1" class="form-control"></td>
+      <td><select name="personmediatype1" id="personmediatype" class="form-control">
       <option selected="selected" value="">None
       <option value="movie">Movie
       <option value="tv">TV
       </select></td></tr>
-    <tr><td><input type="text" name="media2"></td>
-      <td><select name="personmediatype2" id="personmediatype">
+    <tr><td><input type="text" class="form-control" name="media2"></td>
+      <td><select name="personmediatype2" id="personmediatype" class="form-control">
       <option selected="selected" value="">None
       <option value="movie">Movie
       <option value="tv">TV
       </select></td></tr>
-    <tr><td><input type="text" name="media3"></td>
-      <td><select name="personmediatype3" id="personmediatype">
+    <tr><td><input type="text" name="media3" class="form-control"></td>
+      <td><select name="personmediatype3" id="personmediatype" class="form-control">
       <option selected="selected" value="">None
       <option value="movie">Movie
       <option value="tv">TV
       </select></td></tr>
-    <tr><td><input type="text" name="media4"></td>
-      <td><select name="personmediatype4" id="personmediatype">
+    <tr><td><input type="text" name="media4" class="form-control"></td>
+      <td><select name="personmediatype4" id="personmediatype" class="form-control">
       <option selected="selected" value="">None
       <option value="movie">Movie
       <option value="tv">TV
       </select></td></tr>
-    <tr><td><p><input type="text" name="media5"></td>
-      <td><select name="personmediatype5" id="personmediatype">
+    <tr><td><p><input type="text" name="media5" class="form-control"></td>
+      <td><select name="personmediatype5" id="personmediatype" class="form-control">
       <option selected="selected" value="">None
       <option value="movie">Movie
       <option value="tv">TV
       </select></td></tr>
-    <tr><td><p><input type="text" name="media6"></td>
-      <td><select name="personmediatype6" id="personmediatype">
+    <tr><td><p><input type="text" name="media6" class="form-control"></td>
+      <td><select name="personmediatype6" id="personmediatype" class="form-control">
       <option selected="selected" value="">None
       <option value="movie">Movie
       <option value="tv">TV
       </select></td></tr>
     </table>
     <br><br>
-    <input type="submit">
-    <input type="reset">
+    <input type="submit" class="btn btn-default">
+    <input type="reset" class="btn btn-default">
+</div>
     </form>
   </div>
+</div>
 
   <div class="tab-pane fade" id="info">
     <br>

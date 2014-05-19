@@ -69,7 +69,7 @@ function signIn(){
 //see if user is logged in or logged out, and reroute them accordingly
 function checkLogInStatus() {
   session_start();
-  if ($_SESSION['loggedin'] == true){
+  if (isset($_SESSION['loggedin']) and $_SESSION['loggedin'] == true){
  //   echo $_SERVER['PHP_SELF'];
     if (basename($_SERVER['PHP_SELF']) == "index.php"){
       header('Location: home.php');

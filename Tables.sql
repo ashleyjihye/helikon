@@ -2,6 +2,8 @@
 -- Tables.sql
 -- Helikon
 
+--Makes all our tables for the database
+
 use athomas2_db;
 -- first, drop any existing tables
 
@@ -36,6 +38,7 @@ create table friends (
 )
 	ENGINE = InnoDB;
 
+--actors or singers
 create table person (
        pid int not null primary key auto_increment,
        name varchar(50),
@@ -45,6 +48,7 @@ create table person (
 )
 	ENGINE = InnoDB;
 
+--all media
 create table media (
        mid int not null primary key auto_increment,
        rating decimal(4,3),
@@ -62,6 +66,7 @@ create table media (
 )
 	ENGINE = InnoDB;
 
+--between person and media
 create table contribution (
        pid int not null,
        mid int not null,
@@ -73,6 +78,7 @@ create table contribution (
 )
 	ENGINE = InnoDB;
 
+--what media users like
 create table likes (
        uid int not null,
        mid int not null,
@@ -85,6 +91,7 @@ create table likes (
 )
 	ENGINE = InnoDB;
 
+--comments
 create table reviews (
        rid int not null primary key auto_increment,
        uid int not null,

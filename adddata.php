@@ -1,18 +1,10 @@
 <!-- Ashley Thomas and Sasha Levy
   Helikon
   adddata.php
-  
-  To Do:
-  add more helpful messages to the user and escape everything when adding stuff
-  clean up! better variable names
-  maybe make things into methods
+  5/19/14
 
-  right now adding an album means:
-    the album can previously exist
-    the person can previously exist
-    the songs being added must be new songs
-    contributions will be made for the album and each song
-
+This file allows the user to insert data into the database. It includes a lot of forms,
+including forms to enter an album or song, tv show or movie, and person
  -->
 
 <?php
@@ -30,31 +22,52 @@ require_once("header.php");
   <script>
   $(document).ready(function (){
 
-
+    //the following lines switch between tabs based on which tab the user clicks
     $("#myTab a[href='#song']").click(function (e) {
-    e.preventDefault()
-    $(this).tab('show')
+    e.preventDefault();
+    $(this).tab('show');
   })
 
   $("#myTab a[href='#album']").click(function (e) {
-    e.preventDefault()
-    $(this).tab('show')
+    e.preventDefault();
+    $(this).tab('show');
   })
 
   $("#myTab a[href='#moviesandtv']").click(function (e) {
-    e.preventDefault()
-    $(this).tab('show')
+    e.preventDefault();
+    $(this).tab('show');
   })
 
   $("#myTab a[href='#actor']").click(function (e) {
-    e.preventDefault()
-    $(this).tab('show')
+    e.preventDefault();
+    $(this).tab('show');
   })
 
   $("#myTab a[href='#info']").click(function (e) {
-    e.preventDefault()
-    $(this).tab('show')
+    e.preventDefault();
+    $(this).tab('show');
   })
+
+  $("#add_row_song").click(function (e) {
+    e.preventDefault();
+    var nextCount = $('#albumTable tr').length;
+    $('#albumTable tr:last').after('<tr><td><input type="text" name="song' + nextCount + '" class="form-control"></td><td><input type="text" name="length' + nextCount + '" class="form-control"></td></tr>');
+  })
+
+  $("#add_row_actor").click(function (e) {
+  console.log("It got here!");
+  e.preventDefault();
+  var nextCount1 = $('#actorTable tr').length;
+  $('#actorTable tr:last').after('<tr><td><input type="text" name="mediaactor' + nextCount1 + '" class="form-control"></td></tr>');
+})
+
+ $("#add_row_media").click(function (e) {
+  console.log("It got here!");
+  e.preventDefault();
+  var nextCount2 = $('#mediaTable tr').length;
+  $("#mediaTable tr:last").after('<tr><td><p><input type="text" name="media' + nextCount2 + '" class="form-control"></td><td><select name="personmediatype' + nextCount2 + '" id="personmediatype" class="form-control"><option selected="selected" value="">None<option value="movie">Movie<option value="tv">TV</select></td></tr>');
+})
+
 
 });
 
@@ -64,12 +77,17 @@ require_once("header.php");
 .form-control{
   width:80%;
   }
+
+#info{
+  margin-left:40px;
+  margin-right:40px;
+}
 </style>
 
 
  <h2 class= "title" >Add Data to the Database </h2>
 
-
+<!--Associating each of the tabs with html code-->
 <div id="myTab">
 <ul class="nav nav-tabs">
   <li class="active"><a href="#song">Song</a></li>
@@ -80,14 +98,11 @@ require_once("header.php");
 </ul>
 </div>
 
-
+<!--the song tab-->
 <div class="tab-content">
-
-
   <div class="tab-pane fade in active" id="song">
     <br>
-    
-      <form class="form-horizontal" id="songform" method="get" action="<?php echo $_SERVER['PHP_SELF']?>">
+      <form class="form-horizontal" id="songform" method="post" action="<?php echo $_SERVER['PHP_SELF']?>">
 <div class="form-group">
     <label for="inputTitle" class="col-sm-2 control-label">Title</label>
 <div class="col-sm-10">
@@ -121,11 +136,11 @@ require_once("header.php");
   </div>
 </div>
 
-
+<!--the album tab-->
   <div class="tab-pane fade" id="album">
     <br>
     <div class="form-group">
-    <form class="form-horizontal" id="albumform" method="get" action="<?php echo $_SERVER['PHP_SELF']?>">
+    <form class="form-horizontal" id="albumform" method="post" action="<?php echo $_SERVER['PHP_SELF']?>">
 
 <input type="hidden" name="type" value="album">
 <label for="inputTitle" class="col-sm-2 control-label">Title</label>
@@ -146,11 +161,11 @@ require_once("header.php");
 </div>
 <label for="inputDescrption" class="col-sm-2 control-label">Description</label>
   <div class="col-sm-10">
-    <textarea rows="4" cols="50" name="description" class="form-control"></textarea>
+    <textarea rows="4" cols="50" name="description" class="form-control"></textarea><br>
   </div>
     <label for="inputSongs" class="col-sm-2 control-label">Songs</label>
   <div class="col-10-sm">
-  <table style="width:60%;" class="table">
+  <table id="albumTable" style="width:60%;" class="table">
   <tr><th>Song</th><th>Length</th></tr>
   <tr><td><input type="text" name="song1" class="form-control"></td><td><input type="text" name="length1" class="form-control"></td></tr>
   <tr><td><input type="text" name="song2" class="form-control"></td><td><input type="text" name="length2" class="form-control"></td></tr>
@@ -162,11 +177,11 @@ require_once("header.php");
   <tr><td><input type="text" name="song8" class="form-control"></td><td><input type="text" name="length8" class="form-control"></td></tr>
   <tr><td><input type="text" name="song9" class="form-control"></td><td><input type="text" name="length9" class="form-control"></td></tr>
   <tr><td><input type="text" name="song10" class="form-control"></td><td><input type="text" name="length10" class="form-control"></td></tr>
-  <tr><td><input type="text" name="song11" class="form-control"></td><td><input type="text" name="length11" class="form-control"></td></tr>
-  <tr><td><input type="text" name="song12" class="form-control"></td><td><input type="text" name="length12" class="form-control"></td></tr>
-  <tr><td><input type="text" name="song13" class="form-control"></td><td><input type="text" name="length13" class="form-control"></td></tr>
-  <tr><td><input type="text" name="song14" class="form-control"></td><td><input type="text" name="length14" class="form-control"></td></tr>
   </table>
+</div>
+<label for="addRowSong" class="col-sm-2 control-label"></label>
+<div class="col-10-sm">
+  <button class="btn btn-default" id="add_row_song">Add Row</button><br><br>
 </div><label for="submitting" class="col-sm-2 control-label"></label><div class="col-10-sm">
   <input type="submit" class="btn btn-default">
   <input type="reset" class="btn btn-default">
@@ -175,9 +190,10 @@ require_once("header.php");
 </div>
 </div>
 
+<!--the movies/tv tab-->
   <div class="tab-pane fade" id="moviesandtv">
     <br>
-     <form class="form-horizontal" id="moviesandtvform" method="get" action="<?php echo $_SERVER['PHP_SELF']?>">
+     <form class="form-horizontal" id="moviesandtvform" method="post" action="<?php echo $_SERVER['PHP_SELF']?>">
 <div class="form-group">
       <input type="hidden" name="type" value="moviesandtv">
 <label for="inputType" class="col-sm-2 control-label">Type</label>
@@ -201,17 +217,23 @@ require_once("header.php");
 </div>
 <label for="inputDescription" class="col-sm-2 control-label">Description</label>
 <div class="col-sm-10">
-  <textarea rows="4" cols="50" name="description" class="form-control"></textarea>
-</div>
+  <textarea rows="4" cols="50" name="description" class="form-control"></textarea><br>
+</div><p><p>
  <label for="inputActors" class="col-sm-2 control-label">Actors</label>
     <div class="col-sm-10">
-    <input type="text" name="mediaactor1" class="form-control">
-    <input type="text" name="mediaactor2" class="form-control">
-    <p><input type="text" name="mediaactor3" class="form-control">
-    <p><input type="text" name="mediaactor4" class="form-control">
-    <p><input type="text" name="mediaactor5" class="form-control">
-    <p><input type="text" name="mediaactor6" class="form-control">
-      <br><br>
+  <table id="actorTable" style="width:60%;" class="table">
+  <tr><th>Actor</th></tr>
+    <tr><td><input type="text" name="mediaactor1" class="form-control"></td></tr>
+    <tr><td><input type="text" name="mediaactor2" class="form-control"></td></tr>
+    <tr><td><input type="text" name="mediaactor3" class="form-control"></td></tr>
+    <tr><td><input type="text" name="mediaactor4" class="form-control"></td></tr>
+    <tr><td><input type="text" name="mediaactor5" class="form-control"></td></tr>
+    </table>
+    </div>
+<label for="addRowActor" class="col-sm-2 control-label"></label>
+<div class="col-10-sm">
+  <button class="btn btn-default" id="add_row_actor">Add Row</button><br><br>
+      </div><label for="submitting" class="col-sm-2 control-label"></label><div class="col-10-sm">
     <input type="submit" class="btn btn-default">
     <input type="reset" class="btn btn-default">
 </div>
@@ -219,10 +241,10 @@ require_once("header.php");
     </div>
 </div>
 
-
+<!--the person tab-->
   <div class="tab-pane fade" id="actor">
     <br>
-     <form id="actorform" class="form-horizontal" method="get" action="<?php echo $_SERVER['PHP_SELF']?>">
+     <form id="actorform" class="form-horizontal" method="post" action="<?php echo $_SERVER['PHP_SELF']?>">
 <div class="form-group">
       <input type="hidden" name="type" value="person">
 <label for="inputName" class="col-sm-2 control-label">Name</label>
@@ -231,7 +253,7 @@ require_once("header.php");
   <div class="col-sm-10"><textarea rows="4" cols="50" class="form-control" name="description"></textarea></div>
 <label for="inputMedia" class="col-sm-2 control-label">Media</label>
  <div class="col-sm-10">
-  <table class="table" style="width: 80%;">
+  <table id="mediaTable" class="table" style="width: 80%;">
   <tr><th>Title</th><th>Type</th></tr>
     <tr><td><input type="text" name="media1" class="form-control"></td>
       <td><select name="personmediatype1" id="personmediatype" class="form-control">
@@ -263,13 +285,12 @@ require_once("header.php");
       <option value="movie">Movie
       <option value="tv">TV
       </select></td></tr>
-    <tr><td><p><input type="text" name="media6" class="form-control"></td>
-      <td><select name="personmediatype6" id="personmediatype" class="form-control">
-      <option selected="selected" value="">None
-      <option value="movie">Movie
-      <option value="tv">TV
-      </select></td></tr>
     </table>
+</div>
+<label for="addRowMedia" class="col-sm-2 control-label"></label>
+<div class="col-10-sm">
+  <button class="btn btn-default" id="add_row_media">Add Row</button><br><br>
+</div><label for="submitting" class="col-sm-2 control-label"></label><div class="col-10-sm">
     <input type="submit" class="btn btn-default">
     <input type="reset" class="btn btn-default">
 </div>
@@ -278,13 +299,17 @@ require_once("header.php");
 </div>
 
   <div class="tab-pane fade" id="info">
+
     <br>
     Welcome to this page! 
-    <br>To add a song, go to the Song tab and enter the song's title, artist, and genre.
-    <br>To add an album, go to the Album tab and enter the album title, the artist, the genre, and any songs that are on the album.
-    <br>To add a movie or tv show, go to the Movie/TV tab. Select either TV or Movie, then enter the title of the media, as well as the genre and any actors that are in it.
-    <br>To add multiple movies or tv shows to an actor, go to the Actor tab. Enter the person's name, and then any movies or TV shows they are in. If there are duplicates of any tv shows and movies, you will need to select the type of media (TV show or movie) that you are trying to add.
-    <br>You can also add a genre! 
+    <br><br>To add a song, go to the Song tab and enter the song's title, artist, and genre (length optional).
+    <br><br>To add an album, go to the Album tab and enter the album title, the artist, the genre, and any songs that are on the album
+    <br>(lengths of both album and songs optional).
+    <br><br>To add a movie or tv show, go to the Movie/TV tab. Select either TV or Movie, then enter the title of the media, as well as the genre and any actors that are in it.
+    <br><br>To add multiple movies or tv shows to an actor, go to the Actor tab. Enter the person's name, and then any movies or TV shows they are in. 
+    <br>If there are duplicates of any tv shows and movies, you will need to select the type of media (TV show or movie) that you are trying to add.
+    <br><br>In terms of genres, feel free to add a genre that best fits the piece of media you are trying to add.
+    <br>Since there are so many options for media, we didn't want to provide an overwhelming menu and instead leave it up to your best judgment!
   </div>
 
 
@@ -335,7 +360,7 @@ else if (!empty($_REQUEST['type'])){
     $mediacount = 1;
 
     //for each piece of media, associate the media and person only if media already exists in the database
-    while ($mediacount <= 6 and $_REQUEST['media' . $mediacount] != ""){
+    while (isset($_REQUEST['media' . $mediacount]) and htmlspecialchars($_REQUEST['media' . $mediacount]) != ""){
       $mediatitle = htmlspecialchars($_REQUEST['media' . $mediacount]);
       $mediatype = htmlspecialchars($_REQUEST['personmediatype' . $mediacount]);
       $mediaid = findMedia($dbh, $mediatitle, $mediatype, $findmedia, $findmediawithtype);
@@ -359,7 +384,7 @@ else if (!empty($_REQUEST['type'])){
 
     //for each actor, add them if they don't exist in database and then associate movie/tvshow and actor
     $actorcount = 1;
-    while ($actorcount <= 6 and htmlspecialchars($_REQUEST['mediaactor' . $actorcount]) != ""){
+    while (isset($_REQUEST['mediaactor' . $actorcount]) and htmlspecialchars($_REQUEST['mediaactor' . $actorcount]) != ""){
       $name = htmlspecialchars($_REQUEST['mediaactor' . $actorcount]);
       $personid = addPerson($dbh, $name, $uid, null, $findperson, $person);
       addContribution($dbh, $mediaid, $personid, $title, $name, $findcontribution, $contribution);
@@ -403,6 +428,7 @@ else if (!empty($_REQUEST['type'])){
     $title = htmlspecialchars($_REQUEST['albumtitle']);
     $genre = htmlspecialchars($_REQUEST['albumgenre']);
     $description = htmlspecialchars($_REQUEST['description']);
+    $length = htmlspecialchars($_REQUEST['albumlength']);
     $albumid = NULL;
     $values = array($title,"album",$personid);
     $albumid = addMedia($dbh, $title, "album", $genre, $length, $uid, $albumid, $description, $findmediausingpid, $media, $values);
@@ -411,7 +437,7 @@ else if (!empty($_REQUEST['type'])){
     //for each song, add it if it doesn't exist by associating it with the album, and then create contribution
     //between song and person if none exists
     $songcount = 1;
-    while ($songcount <= 14 and $_REQUEST['song' . $songcount] != ""){
+    while (isset($_REQUEST['song' . $songcount]) and htmlspecialchars($_REQUEST['song' . $songcount]) != ""){
       $title = htmlspecialchars($_REQUEST['song' . $songcount]);
       $length = htmlspecialchars($_REQUEST['length' . $songcount]);
       $values = array($title,"song",$personid);

@@ -1,4 +1,15 @@
-<?php
+<!-- Ashley Thomas and Sasha Levy
+  Helikon
+  user.php
+  5/19/14
+
+This shows either the user's profile page, or another's page. If it shows your page,
+you have the added functionality to edit it (change the profile pic, get rid of things
+in your top ten). You can also accept or deny friend requests here.
+You can always see someone's friends.
+ -->
+
+ <?php
    
 require_once("MDB2.php");
 require_once("/home/cs304/public_html/php/MDB2-functions.php");
@@ -37,7 +48,7 @@ width:25%;
  }
 
 .friendsdiv{
- width: 25%;
+ width: 15%;
  display:inline-block;
    float:left;
  }
@@ -51,8 +62,9 @@ width:25%;
 </style>
 
 <?php
+
+//gets the user's information based on their uid
 function getUser($values, $dbh) {
- 
    $sql = "select uid, name, username from user where uid=?";
    $resultset = prepared_query($dbh, $sql, $values);
    $numRows = $resultset->numRows();
@@ -66,30 +78,33 @@ function getUser($values, $dbh) {
    else{
     return null;
    }
-  
 }
 
+//gets a person's likes
 function getLikes($values, $dbh) {
    echo "</div>";
   echo "<div id='getLikesOwner'>";
-   $sql = "select title, type, likes.dateadded from user inner join likes using (uid) inner join media using (mid) where user.uid=? order by likes.dateadded desc limit 10";
+   $sql = "select mid, title, type, likes.dateadded from user inner join likes using (uid) inner join media using (mid) where user.uid=? order by likes.dateadded desc limit 10";
    $resultset = prepared_query($dbh, $sql, $values);
    echo "<h3>Current Top Ten:</h3><ul>";
    $count = 1;
    while($detailrow = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
      $title = $detailrow['title'];
      $type = $detailrow['type'];
-   echo "<li>$title ($type) </li>";
+     $mid = $detailrow['mid'];
+   echo "<li><a href= \"media.php?mid=" . $mid . "\">$title ($type)</a></li><br>";
    }
    echo "</ul>";
    echo "</div>";
 }
 
+//delete a like from the database
 function deleteLike($dbh, $values){
   $sql = "delete from likes where uid = ? and mid = ?";
   prepared_statement($dbh,$sql,$values);
 }
 
+//displays the user's likes with the capability to delete them
 function getLikesOwner($values, $dbh) {
   echo "<div id='part1'>";
    $sql = "select mid, title, type, likes.dateadded from user inner join likes using (uid) inner join media using (mid) where user.uid=? order by likes.dateadded desc limit 10";
@@ -110,7 +125,7 @@ function getLikesOwner($values, $dbh) {
        $title = $detailrow['title'];
        $type = $detailrow['type'];
        $mid = $detailrow['mid'];
-       echo "<li>$title ($type) <input type='checkbox' name='delete" . $counter . "' value='" . $mid . "'>Delete?</li><br>";
+       echo "<li><a href= \"media.php?mid=" . $mid . "\">$title ($type)</a> <input type='checkbox' name='delete" . $counter . "' value='" . $mid . "'>Delete?</li><br>";
        $counter++;
      }
    }
@@ -118,17 +133,15 @@ function getLikesOwner($values, $dbh) {
    echo "</div>";
 }
 
+//get the user's picture
 function processPicture($uid, $dbh){
   echo "<div class='everything'>";
   $destfile = "";
-
   if (isset($_FILES['imagefile']) and $_FILES["imagefile"]["error"] == 0){
-  
     if( $_FILES['imagefile']['error'] != UPLOAD_ERR_OK ) {
         print "<P>Upload error: " . $_FILES['imagefile']['error'];
     } 
     else {
-
       // image was successfully uploaded.  
       $name = $_FILES['imagefile']['name'];
       $type = $_FILES['imagefile']['type'];
@@ -154,14 +167,14 @@ function processPicture($uid, $dbh){
   }
   echo "</div>";
   return $destfile;
-
 }
 
+//add this person as a friend button
 function addFriendButton($page, $array, $username){
   echo "<div id='addFriendButton'>";
   if ($username != $array['username']){
     $uid = $array['uid'];
-    echo '<form style="float:left; display:inline-block; width:200px;" method="get" action="' . $page . '">
+    echo '<form style="float:left; display:inline-block; width:200px;" method="post" action="' . $page . '">
         <input type="hidden" name="uid" value="' . $uid . '">
     <input type="hidden" name="addfriend">
     <input type="submit" value="Add Friend" class="btn btn-primary btn-lg">
@@ -169,6 +182,8 @@ function addFriendButton($page, $array, $username){
   }
   echo "</div>";
 }
+
+//display friends if you are this user
 function displayFriends($dbh){
   $useruid = getUid($dbh,$_SESSION['username']);
   $sql = "select uid, friendid from friends where (uid = ? or friendid = ?) and state = '1'";
@@ -177,10 +192,10 @@ function displayFriends($dbh){
   $thefriend;
   echo "<div class='friendsdiv'>";
   if ($numpeople == 1) {
-    echo "<h3 style=float:'left';>1 friend found</h3>";
+    echo "<h3 style=float:'left';>1 Friend</h3>";
   }
   else{    
-    echo "<h3 style=float:'left';>$numpeople friends found</h3>";
+    echo "<h3 style=float:'left';>$numpeople Friends</h3>";
   }
   while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)){
     $uid = $row['uid'];
@@ -201,6 +216,7 @@ function displayFriends($dbh){
   echo "</div>";
 }
 
+//display friends if you are not the user
 function displayFriendsNotUser($dbh,$theuid){
   $sql = "select uid, friendid from friends where (uid = ? or friendid = ?) and state = '1'";
   $resultset = prepared_query($dbh, $sql, array($theuid,$theuid,));
@@ -208,10 +224,10 @@ function displayFriendsNotUser($dbh,$theuid){
   $thefriend;
   echo "<div class='friendsdiv'>";
   if ($numpeople == 1) {
-    echo "<h3 style=float:'left';>1 friend found</h3>";
+    echo "<h3 style=float:'left';>1 Friend</h3>";
   }
   else{    
-    echo "<h3 style=float:'left';>$numpeople friends found</h3>";
+    echo "<h3 style=float:'left';>$numpeople Friends</h3>";
   }
   while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)){
     $uid = $row['uid'];
@@ -232,6 +248,7 @@ function displayFriendsNotUser($dbh,$theuid){
   echo "</div>";
 }
 
+//helper function to see if you are friends with someone
 function areFriends($dbh, $array, $username){
   $uid = getUid($dbh, $username);
   $sql = "select * from friends where (uid = ? or friendid = ?) and (friendid = ? or uid = ?);";
@@ -257,6 +274,7 @@ function areFriends($dbh, $array, $username){
   }
 }
 
+//get pending friend requests where people have asked you
 function getFriendRequests($dbh, $page, $username){
   echo "<div class= 'requestsdiv'>";
   $uid = getUid($dbh, $username);
@@ -271,7 +289,7 @@ function getFriendRequests($dbh, $page, $username){
     while ($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)){
       $frienduid = $row['uid'];
       $friendname = $row['name'];
-      echo '' . $friendname . '<form method="get" action="' . $page . '">
+      echo '' . $friendname . '<form method="post" action="' . $page . '">
       <input type="hidden" name="uid" value="' . $uid . '">
       <input type="hidden" name="acceptdenyfriend" value="true">
       <input type="hidden" name="friendid" value="' . $frienduid . '">
@@ -283,6 +301,7 @@ function getFriendRequests($dbh, $page, $username){
   echo "</div>";
 }
 
+//you pressed the button to add a friend, and so this is recorded in the database
 function requestFriend($dbh, $userarray, $username){
    $uid = getUid($dbh, $username);
    $values = array($uid,$uid,$userarray['uid'],$userarray['uid'],);
@@ -296,6 +315,7 @@ function requestFriend($dbh, $userarray, $username){
  }
 }
 
+//changes the database to add a friend
 function addFriend($dbh, $friendid, $username){
    $uid = getUid($dbh, $username);
    $values = array($uid,$uid,$friendid,$friendid,);
@@ -311,6 +331,7 @@ function addFriend($dbh, $friendid, $username){
  }
 }
 
+//deletes an entry from the database since you have denied a friend request
 function denyFriend($dbh, $friendid, $username){
    $uid = getUid($dbh, $username);
    $sql = "select * from friends where uid = ? and friendid = ?";
@@ -323,11 +344,12 @@ function denyFriend($dbh, $friendid, $username){
   }
 }
 
+//--------------------------   main --------------------------
 checkLogInStatus();   
 $username = $_SESSION['username'];
 
 if (isset($_REQUEST['uid'])){
-  $pageuid = $_REQUEST['uid'];
+  $pageuid = htmlspecialchars($_REQUEST['uid']);
 }
 else{
   $pageuid = getUid($dbh,$username);
@@ -344,15 +366,13 @@ if ($userarray == null){
   createNavBar("home.php");
   echo "<h1>$name's Profile</h1>";
 
-  $destfile = processPicture($pageuid,$dbh);
-  if( $destfile != "") {
-    if ($pageuid == getUid($dbh,$username)){
-    echo "<div id='picture'><p style='float:left; display:inline-block;'><img width=200 height=200 src='$destfile'><p>\n";
-
+  $picture = processPicture($pageuid,$dbh);
+  if( $picture != "") {
+    if ($pageuid == getUid($dbh,$username)){ //different formatting
+    echo "<div id='picture'><p style='float:left; display:inline-block;'><img width=200 height=200 src='$picture'><p>\n";
     }
     else{
-    echo "<div id='picture1'><p style='float:left; display:inline-block;'><img width=200 height=200 src='$destfile'><p>\n";
-
+    echo "<div id='picture1'><p style='float:left; display:inline-block;'><img width=200 height=200 src='$picture'><p>\n";
     }
   }
 
@@ -361,11 +381,11 @@ if ($userarray == null){
   }
 
   if (isset($_REQUEST['acceptdenyfriend'])){
-    if ($_REQUEST['submit'] == 'Deny'){
-      denyFriend($dbh,$_REQUEST['friendid'],$username);
+    if (htmlspecialchars($_REQUEST['submit']) == 'Deny'){
+      denyFriend($dbh,htmlspecialchars($_REQUEST['friendid']),$username);
     }
-    else if ($_REQUEST['submit'] == 'Accept'){
-      addFriend($dbh,$_REQUEST['friendid'],$username);
+    else if (htmlspecialchars($_REQUEST['submit']) == 'Accept'){
+      addFriend($dbh,htmlspecialchars($_REQUEST['friendid']),$username);
     }
   }
 
@@ -381,10 +401,11 @@ if ($userarray == null){
 
   for ($i=0; $i < 10; $i++) { 
     if (isset($_REQUEST['delete' . $i])){
-      deleteLike($dbh,array($pageuid,$_REQUEST['delete' . $i]));
+      deleteLike($dbh,array($pageuid,htmlspecialchars($_REQUEST['delete' . $i])));
     }
   }
 
+//display things differently depending on if you're the user or not
 if ($pageuid == getUid($dbh,$username)){
  
   getLikesOwner($pageuid,$dbh);

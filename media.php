@@ -1,4 +1,11 @@
+<!-- Ashley Thomas and Sasha Levy
+  Helikon
+  media.php
+  5/19/14
 
+This file includes all functionality for seeing media pages, being able to edit media pages,
+and looking at recently added media, as well as adding comments to media pages
+ -->
 
 <?php
    
@@ -14,24 +21,55 @@ $dbh = db_connect($athomas2_dsn);
 #currentRating {
 display:inline-block;
 }
+.category {
+  margin-left: 30px;
+}
 
 ul{
   margin-left:300px;
 }
 
+#actorheader{
+  margin-left:300px;
+}
+
+#albumsongheader{
+  margin-left:300px;
+}
+
+#addmediabutton{
+  margin-left:280px;
+}
+
+#description{
+  margin-left:280px;
+  margin-right:100px;
+}
+
 .replyform1{
-  margin-left:100px;
+  margin-left:50px;
 }
 
 .auto{
-  margin-left:100px;
+  margin-left:50px;
 }
+
+#table {
+  width:80%;
+  }
 </style>
 
+<!--This function handles a lot of Ajax requests, including dynamically adding comments
+//to the page, dealing with the user pressing reply and thereby showing a textarea in
+//order for the user to type, and dealing with the user pressing enter instead of submit
+//in order to submit a comment -->
+
 <?php
-function printJquery() {
+
+function printJQuery(){
 echo '<script>
   $(document).on("ready ajaxSuccess",function (){
+
     $(".comment-reply").hover(function(){
        $(this).css("color","pink");},function(){
         $(this).css("color","blue");
@@ -41,13 +79,9 @@ echo '<script>
      $(".commentform").submit(function(e){
       console.log("Submitting form by Ajax");
       e.preventDefault();
-      console.log($(this));
       var thetextbox = $(this).find("#comment");
       data = $(e.target).closest(".commentform").serialize();
-      console.log(data);
-
       var media = $(this).closest(".media-body");
-      console.log("will append to "+media);
       $.ajax({
         type: "POST",
         url: "commentsajax.php",
@@ -66,11 +100,8 @@ echo '<script>
      $(".commentform1").submit(function(e){
       console.log("Submitting form by Ajax1");
       e.preventDefault();
-      console.log($(this));
       var thetextbox = $(this).find("#comment");
       data = $(e.target).closest(".commentform1").serialize();
-      console.log(data);
-
       var media = $(this).closest(".replyform1");
       console.log("will append to "+media);
       $.ajax({
@@ -91,7 +122,6 @@ echo '<script>
   $(".replyform textarea")
       .keypress(function (e) {
         if (e.keyCode == 13  && !e.shiftKey){
-          console.log("Submitting");
           $(this).closest("form")
             .submit();
         }
@@ -114,9 +144,11 @@ echo '<script>
   });
 
 
+
 </script>';
 }
 
+//Returns an array of all information concerning a piece of media given its mid
 function getMedia($values, $dbh) {
    $sql = "select * from media where mid=?";
    $resultset = prepared_query($dbh, $sql, $values);
@@ -132,6 +164,7 @@ function getMedia($values, $dbh) {
      $type = $detailrow['type'];
      $description = $detailrow['description'];
      $contributionarray = array();
+     //get all contributions by people concerning this mid
     $sql = "select * from media inner join contribution using (mid) inner join person using (pid) where mid = ?";
     $resultset = prepared_query($dbh, $sql, $values);
     $numRows = $resultset->numRows();
@@ -150,29 +183,21 @@ function getMedia($values, $dbh) {
     $albumname = "";
    }
 
-     return array('mid' => $mid, 'rating' => $rating, 'title' => $title, 'dateadded' => $dateadded, 'genre' => $genre, 'length' => $length, 'type' => $type, 'albumid' => $albumid, 'albumname' => $albumname, 'contributionarray' => $contributionarray, 'numContributions' => $numRows, 'description' => $description);
+     return array('mid' => $mid, 'rating' => $rating, 'title' => $title, 'dateadded' => $dateadded, 
+                  'genre' => $genre, 'length' => $length, 'type' => $type, 'albumid' => $albumid, 
+                  'albumname' => $albumname, 'contributionarray' => $contributionarray, 
+                  'numContributions' => $numRows, 'description' => $description);
    }
    else{
     return null;
    }
 }
 
-function getTVMovieContributions($dbh,$values,$page){
-  $sql = "select pid, name from person inner join contribution using (pid) where mid = ?";
-  $resultset = prepared_query($dbh,$sql,$values);
-  echo "<h3 style:'margin-left:300px;'>Actors</h3><ul style:'margin-left:300px;'>";
-  while ($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)){
-    $pid = $row['pid'];
-    $name = $row['name'];
-    echo "<li><a href= \"person.php?pid=" . $pid . "\">$name</a><br><br></li>";
-  }
-  echo "</ul>";
-}
-
+//get all songs from an album
 function getAlbumSongs($dbh,$values,$page){
   $sql = "select * from media where albumid = ?";
   $resultset = prepared_query($dbh,$sql,$values);
-  echo "<h3>Songs</h3><ul>";
+  echo "<h3 id='albumsongheader'>Songs</h3><ul>";
   while ($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)){
     $mid = $row['mid'];
     $title = $row['title'];
@@ -187,36 +212,39 @@ function getAlbumSongs($dbh,$values,$page){
   echo "</ul>";
 }
 
+//show media that's most recently been added (sorted by dateadded)
 function showRecentMedia($dbh,$page){
-  $sql = "select * from media order by dateadded desc limit 10";
+  $sql = "select * from media order by dateadded desc limit 20";
   $resultset = query($dbh,$sql);
-  echo "<h3>Most Recently Added Items</h3>";
-  echo "<table class='table' style='width:80%;'><thead><tr><th>Title</th><th>Genre</th></tr></thead><tbody>";
-  while ($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)){
-    $mid = $row['mid'];
-    $title = $row['title'];
-    $genre = $row['genre'];
-     echo "<tr><td><a href= \"" . $page . "?mid=" . $mid . "\">$title</a></td><td>" . $genre . "</td><tr>";
-  }
-  echo "</tbody></table>";
+  echo "<div class='category'><h3>Most Recently Added Items</h3>";
+   echo "<table id='table' class='table'><tr><th>Title</th><th>Genre</th></tr>";
+    while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
+      $title= $row['title'];
+      $genre = $row['genre'];
+      $mid = $row['mid'];
+      echo"<tr><td><a href=\"media.php?mid=" . $mid . "\">$title</a></td><td>" . $genre . "</td></tr>";
+    }
+    echo "</table><br></div>";
 }
 
+//add this media to your top 10 button
 function addMediaButton($dbh, $page, $mid, $uid){
   $sql = "select * from likes where uid = ? and mid = ?";
   $resultset = prepared_query($dbh, $sql, array($uid,$mid));
   $numResults = $resultset->numRows();
   if ($numResults == 1){
-    echo "This media is in your Top Ten List.<br>";
+    echo '<div id="addmediabutton">This media is in your Top Ten List.<br></div>';
   }
   else {
-    echo '<form method="get" action="' . $page . '">
+    echo '<div id="addmediabutton"><form method="post" action="' . $page . '">
       <input type="hidden" name="mid" value="' . $mid . '">
     <input type="hidden" name="addmedia">
     <input type="submit" value="Add to Top Ten" class="btn btn-primary btn-lg">
-  </form><br>';
+  </form></div><br>';
   }
 }
 
+//add this media to your likes
 function addMediaToUser($dbh, $mid, $uid){
   $datetime = query($dbh,"Select now()");
   while ($row1 = $datetime->fetchRow(MDB2_FETCHMODE_ASSOC)){
@@ -240,6 +268,7 @@ function addMediaToUser($dbh, $mid, $uid){
     query($dbh,$sql);
 }
 
+//show all the comments in the database that correspond to this mid
 function showComments($page, $dbh, $mid, $pageuid){
   $sql = "select rid, uid, name, comment, initial, dateadded from reviews inner join user using (uid) where mid = ? order by initial desc, dateadded";
   $resultset = prepared_query($dbh,$sql,$mid);
@@ -255,7 +284,7 @@ function showComments($page, $dbh, $mid, $pageuid){
     $uid = $row['uid'];
     $counter++;
 
-    $picture = getUserPicture($uid,$dbh);
+    $picture = getUserPicture($uid,$dbh); //get the picture of each user
 
     if ($counter == 1){
       $lastinitial = $initial;
@@ -264,13 +293,14 @@ function showComments($page, $dbh, $mid, $pageuid){
       if ($lastinitial != $initial){
         echo '</div></div>';
         $lastinitial = $initial;
-      }
+      } 
+      //different scenarios to account for formatting
       echo '<div class="media"><a class="pull-left" href="user.php?uid=' . $uid . '">
             <img width=70 height=70 class="media-object" src="' . $picture . '" alt="Media Object"></a>
             <div class="media-body">
             <h4 class="media-heading">' . $name . '</h4> at ' . $time . '<br>' . $comment . '
             <br><span class="comment-reply" style="color:blue;" >Reply</span>
-            <br><div class="replyform"><form class="commentform" method="get" action="' . $page . '">
+            <br><div class="replyform"><form class="commentform" method="post" action="' . $page . '">
             <input type="hidden" name="mid" value="' . $mid . '">
             <input type="hidden" name="rid" value="' . $rid . '">
             <input type="hidden" name="uid" value="' . $pageuid . '">
@@ -284,7 +314,7 @@ function showComments($page, $dbh, $mid, $pageuid){
             <div class="media-body">
             <h4 class="media-heading">' . $name . '</h4> at ' . $time . '<br>' . $comment . '
             <br><span class="comment-reply" style="color:blue"; >Reply</span>
-            <br><div class="replyform"><form class="commentform" method="get" action="' . $page . '">
+            <br><div class="replyform"><form class="commentform" method="post" action="' . $page . '">
             <input type="hidden" name="mid" value="' . $mid . '">
             <input type="hidden" name="rid" value="' . $rid . '">
             <input type="hidden" name="uid" value="' . $pageuid . '">
@@ -296,8 +326,9 @@ function showComments($page, $dbh, $mid, $pageuid){
   echo "</div><br><br>";
 }
 
+//add comment form
 function commentForm($page, $mid, $uid){
-  echo '<div class="replyform1"><form class="commentform1" method="get" action="' . $page . '">
+  echo '<div class="replyform1"><form class="commentform1" method="post" action="' . $page . '">
         <input type="hidden" name="mid" value="' . $mid . '">
         <input type="hidden" name="uid" value="' . $uid . '">
         <textarea rows="4" cols="50" id="comment" name="comment"></textarea><br>
@@ -305,15 +336,8 @@ function commentForm($page, $mid, $uid){
         <input type="submit" value="Add Comment" class="btn btn-primary btn-lg">
         </form></div><br>';
 }
-
-function getNumRatings($dbh,$mid){
-  $sql = "select count(uid) as count from ratings where mid = ?";
-  $values = array($mid);
-  $resultset = prepared_query($dbh,$sql,$values);
-  $row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC);
-  return $row['count'];
-}
   
+//to display your current rating of this media
 function getYourRating($dbh,$uid,$mid){
   $sql = "select rating from ratings where uid = ? and mid = ?";
   $values = array($uid, $mid);
@@ -328,12 +352,8 @@ function getYourRating($dbh,$uid,$mid){
   }
 }
 
-function editDatabase($dbh){
-  $sql = "update media set title = ?, genre = ?, length = ?, type = ? where mid = ?";
-  $values = array($uid, $mid);
-  $resultset = prepared_statement($dbh,$sql,$values);
-}
-
+//gets information from itunes about the media (using their Search API) and replaces it with the current info
+//if the current info is blank
 function getMediaInfoFromItunes($dbh,$mid,$artist){
 
   $sql = "select * from media where mid = ?";
@@ -348,7 +368,7 @@ function getMediaInfoFromItunes($dbh,$mid,$artist){
 
   $final = "";
 
-  if ($type == "song"){
+  if ($type == "song"){ //have to search by differernt terms depending on different type of media
     $words = str_replace(" ","+",$title) . "+" . str_replace(" ","+",$artist);
     $json =  file_get_contents('http://itunes.apple.com/search?term='.$words.'&limit=25&media=music&entity=song'); 
   }  
@@ -372,12 +392,13 @@ function getMediaInfoFromItunes($dbh,$mid,$artist){
   $array = json_decode($json, true);
   foreach($array['results'] as $value)
   {
-    if ($picture == null or $picture == ""){
+    if ($picture == null or $picture == ""){ //get the artwork for this
       $picture = $value['artworkUrl100'];
     }
-    if ($genre == null or $genre == ""){
+    if ($genre == null or $genre == ""){ //the genre
       $genre = $value['primaryGenreName'];
     }
+    //a description
     if (($type == "tv" or $type == "movie") and ($description == null or $description == "")){
       if (array_key_exists('longDescription',$value)){
         $description = $value['longDescription'];
@@ -386,6 +407,7 @@ function getMediaInfoFromItunes($dbh,$mid,$artist){
         $description = $value['shortDescription'];
       }
     }
+    //time for song is minutes and seconds, for album is # of songs, for movie is minutes (iTunes doesn't provide good length for tv)
     if ($type == "song" and ($length == null or $length == "")){
       $length = ((int)$value['trackTimeMillis'])/1000.0;
       $length = decimal_to_time_song($length);
@@ -403,6 +425,7 @@ function getMediaInfoFromItunes($dbh,$mid,$artist){
   }
 }
 
+//helpfer function to help convert seconds to minutes and seconds and display it nicely
 function decimal_to_time_song($decimal) {
     $minutes = floor($decimal / 60);
     $seconds = $decimal - (int)$decimal;
@@ -410,10 +433,11 @@ function decimal_to_time_song($decimal) {
     return str_pad($minutes, 2, " ",STR_PAD_LEFT) . ":" . str_pad($seconds, 2, "0", STR_PAD_LEFT);
 }
 
+//function to get the picture of the media based on if user uploaded one, or if one exists in database
 function processPicture($mid, $dbh){
-
   $destfile = "";
 
+  //user uploaded a new picture
   if (isset($_FILES['imagefile']) and $_FILES["imagefile"]["error"] == 0){
     if( $_FILES['imagefile']['error'] != UPLOAD_ERR_OK ) {
         print "<P>Upload error: " . $_FILES['imagefile']['error'];
@@ -440,14 +464,16 @@ function processPicture($mid, $dbh){
   }
 
   else {
-    $destfile = getMediaPicture($mid,$dbh);
+    $destfile = getMediaPicture($mid,$dbh); //look in the database
   }
-
   return $destfile;
 }
 
+//different page for editing the media form
 function editMediaPage($mediaarray){
   global $page;
+
+  //get all these values to have as values in the form
   $mid = $mediaarray['mid'];
   $title = $mediaarray['title'];
   $genre = $mediaarray['genre'];
@@ -488,12 +514,14 @@ function editMediaPage($mediaarray){
 <input type="text" name="type" class="form-control" value="' . $type . '"><br>
   </div>';
 
+  //artist
   if ($type == "song" or $type == "album"){
     echo '<label for="artist" class="col-sm-2 control-label">Artist</label>
 <div class="col-sm-10">
 <input type="text" name="artist" class="form-control" value="' . $contributionarray[0]['name'] . '"><br></div>';
   }
 
+  //album that song came from
   if ($type == "song"){
     echo '<label for="album" class="col-sm-2 control-label">Album Name</label>
 <div class="col-sm-10">
@@ -504,6 +532,7 @@ function editMediaPage($mediaarray){
 <div class="col-sm-10">
 <textarea rows="4" cols="50" class="form-control" name="description">' . $description . '</textarea><br></div>';
 
+  //actors
   if ($type == "movie" or $type == "tv"){
     if($contributionarray != null) {
     echo '<label for="deleteactor" class="col-sm-2 control-label">Delete Actors</label>';
@@ -519,13 +548,18 @@ function editMediaPage($mediaarray){
     }
     }
 
-    echo '<label for="addactors" class="col-sm-2 control-label">Add Actors</label><div class="col-sm-10">';
-    for ($counter = 0; $counter < 5; $counter++){
-      echo '<input type="text" style="width:40%;" class="form-control" name="newactor' . $counter . '"><br>';
+    echo '<label for="addactors" class="col-sm-2 control-label">Add Actors</label><div class="col-sm-10"> <table id="actorTable" style="width:60%;" class="table">
+  <tr><th>Actor</th></tr>';
+    for ($counter = 1; $counter <= 5; $counter++){
+      echo '<tr><td><input type="text" style="width:40%;" class="form-control" name="newactor' . $counter . '"></tr></td>';
     }
   }
-
-  echo '<br><input type="submit" value="Make Changes" class="btn btn-default"></form></div>';
+  echo '</table></div>
+<label for="addRowActor" class="col-sm-2 control-label"></label>
+<div class="col-10-sm">
+  <button class="btn btn-default" id="add_row_actor">Add Row</button><br><br>
+</div><label for="submitting" class="col-sm-2 control-label"></label><div class="col-10-sm">';
+  echo '<input type="submit" value="Make Changes" class="btn btn-default"></div></form></div>';
 }
 
 checkLogInStatus();   
@@ -535,18 +569,31 @@ $uid = getUid($dbh,$username);
 if (isset($_REQUEST['mid'])){
   $pagemid = htmlspecialchars($_REQUEST['mid']);
   $mediaarray = getMedia($pagemid,$dbh);
-  if ($mediaarray == null){
+  if ($mediaarray == null){ //make sure the mid is actually in the database
     header ("Location: media.php");
     exit();
   }
 
   else{
-
+    //user edited the media
     if (isset($_REQUEST['edited'])){
+
       $mid = htmlspecialchars($_REQUEST['mid']);
+
+      $mediaarray1 = getMedia($mid,$dbh);
+
       $title = htmlspecialchars($_REQUEST['title']);
+      if ($title == ""){
+        $title = $mediaarray1['title'];
+      }
       $type = htmlspecialchars($_REQUEST['type']);
+      if ($type == ""){
+        $type = $mediaarray1['type'];
+      }
       $genre = htmlspecialchars($_REQUEST['genre']);
+      if ($genre == ""){
+        $genre = $mediaarray1['genre'];
+      }
       $length = htmlspecialchars($_REQUEST['length']);
       $description = htmlspecialchars($_REQUEST['description']);
       $albumname = null;
@@ -554,15 +601,20 @@ if (isset($_REQUEST['mid'])){
       $deleteactorarray = null;
       $addactorarray = null;
 
-      if ($type == "song"){
+      if ($type == "song" and htmlspecialchars($_REQUEST['albumname']) != ""){
         $albumname = htmlspecialchars($_REQUEST['albumname']);
       }
+      else{
+        $albumname = $mediaarray1['albumname'];
+      }
 
-      if ($type == "song" or $type == "album"){
+      if (($type == "song" or $type == "album") and htmlspecialchars($_REQUEST['artist']) != ""){
         $artist = htmlspecialchars($_REQUEST['artist']);
       }
       else{
-
+        $artist = $mediaarray1['contributionarray'][0]['name'];
+      }
+      if ($type == "tv" or $type == "movie"){
         $counter = 0;
         $deleteactorarray = array();
         for ($i=0; $i < $mediaarray['numContributions']; $i++) { 
@@ -573,24 +625,20 @@ if (isset($_REQUEST['mid'])){
         }
 
         $addactorarray = array();
-        for ($counter = 0; $counter < 5; $counter++){
-          if (isset($_REQUEST['newactor' . $counter]) and htmlspecialchars($_REQUEST['newactor' . $counter]) != ""){
-            $addactorarray[$counter] = htmlspecialchars($_REQUEST['newactor' . $counter]);
-          }
-          else {
-            break;
-          }
+        $counter = 1;
+        while (isset($_REQUEST['newactor' . $counter]) and htmlspecialchars($_REQUEST['newactor' . $counter]) != ""){
+          $addactorarray[$counter] = htmlspecialchars($_REQUEST['newactor' . $counter]);
+          $counter++;
         }
-
       }
 
       editMedia($uid, $mid, $title, $type, $genre, $length, $artist, $albumname, $deleteactorarray, $addactorarray, $description);
     }
 
     $artistarray = getAlbumSongContributions($dbh,$pagemid);
-    getMediaInfoFromItunes($dbh,$pagemid,$artistarray['name']);
-    $picture = processPicture($pagemid,$dbh);
-    $mediaarray = getMedia($pagemid, $dbh);
+    getMediaInfoFromItunes($dbh,$pagemid,$artistarray['name']); //get info from iTunes
+    $picture = processPicture($pagemid,$dbh); //get correct picture
+    $mediaarray = getMedia($pagemid, $dbh); //get all the media data again, since it could have been edited
 
     $title = $mediaarray['title'];
     $genre = $mediaarray['genre'];
@@ -600,22 +648,39 @@ if (isset($_REQUEST['mid'])){
     $albumid = $mediaarray['albumid'];
     $rating = $mediaarray['rating'];
     $description = $mediaarray['description'];
+    $contributionarray = $mediaarray['contributionarray'];
 
     printPageTop("$title");
-    printJquery();
+    printJQuery();
+
+?>
+
+<!--This handles getting extra rows for the editing table -->
+<script>
+$(document).ready(function (){
+  $("#add_row_actor").click(function (e) {
+    console.log("It got here!");
+    e.preventDefault();
+    var nextCount = $("#actorTable tr").length;
+    $("#actorTable tr:last").after('<tr><td><input type="text" style="width:40%;" class="form-control" name="newactor' + nextCount + '"></tr></td>');
+  })
+});
+</script>
+
+<?php
+
     createNavBar("home.php");
 
-    if (isset($_REQUEST['edit'])){
+    if (isset($_REQUEST['edit'])){ //user wants to edit media
       echo "<h1>$title</h1>";
       editMediaPage($mediaarray);
     }
 
-    else {
-
+    else { //regular media page
       echo '<h1>' . $title .'  <button class="btn btn-primary btn-large" onclick="location.href=\'' . $page . '?mid=' . $pagemid . '&edit\'">edit</button></h1>';
       echo "<p style='float:left; display:inline-block; margin: 20px; padding:20px;'>";
       if($picture!="") {
-	echo "<img width=200 height=200 src='$picture'><p>\n";
+	echo "<img width=200 height=200 src='$picture'><p><br><br>\n";
       }
       $numRatings = getNumRatings($dbh,$pagemid);
       $myRating = getYourRating($dbh,$uid,$pagemid);
@@ -633,7 +698,9 @@ if (isset($_REQUEST['mid'])){
       if ($type == "song"){
         $artistarray = getAlbumSongContributions($dbh,$pagemid);
         echo "Artist: <a href=\"person.php?pid=" . $artistarray['pid'] . "\">" . $artistarray['name'] . "</a><br>";
-        echo "From Album: <a href= \"media.php?mid=" . $albumid . "\">$albumname</a><br>";
+        if ($albumid != "" and $albumid != null){
+          echo "From Album: <a href= \"media.php?mid=" . $albumid . "\">$albumname</a><br>";
+        }
       }
       if ($type == "album"){
         $artistarray = getAlbumSongContributions($dbh,$pagemid);
@@ -641,20 +708,28 @@ if (isset($_REQUEST['mid'])){
 
       }
 
-      echo "Description: $description<br><br>";
+      if ($description != "" and $description != "null"){
+        echo "<div id='description'>Description: $description</div><br>";
+      }
 
       if (isset($_REQUEST['addmedia'])){
         addMediaToUser($dbh, $pagemid, $uid);
       }
-
+      echo "<br>";
       addMediaButton($dbh,$page,$pagemid,$uid);
 
       if ($type == "tv" or $type == "movie"){
-        getTVMovieContributions($dbh,$pagemid,$page);
+        echo "<h3 id='actorheader'>Actors</h3><ul>";
+        foreach ($contributionarray as $key => $value) {
+            echo "<li><a href= \"person.php?pid=" . $value['pid'] . "\">" . $value['name'] . "</a><br><br></li>";
+          }
+        echo "</ul>";
       }
       else if ($type == 'album'){
         getAlbumSongs($dbh,$pagemid,$page);
       }
+
+      //comments
       commentForm($page, $pagemid, $uid);
       showComments($page,$dbh,$pagemid, $uid);
 

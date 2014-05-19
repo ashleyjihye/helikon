@@ -1,4 +1,14 @@
-<?php
+<!-- Ashley Thomas and Sasha Levy
+  Helikon
+  ratings.php
+  5/19/14
+
+This file is in charge of Ajax handling in order to change the user's rating of media
+in the database and then return the results of both the user's rating and the overall 
+average rating
+ -->
+
+ <?php
 
 require_once("MDB2.php");
 require_once("/home/cs304/public_html/php/MDB2-functions.php");
@@ -8,6 +18,7 @@ require_once("header.php");
 $page = $_SERVER['PHP_SELF'];
 $dbh = db_connect($athomas2_dsn);
 
+//add user's rating to the database
 function addRating($dbh,$uid,$mid,$rating){
   $sql = "select * from ratings where uid = ? and mid = ?";
   $values = array($uid,$mid,);
@@ -32,15 +43,7 @@ function addRating($dbh,$uid,$mid,$rating){
    return $avgrating;
 }
 
-function getNumRatings($dbh,$mid){
-  $sql = "select count(uid) as count from ratings where mid = ?";
-  $values = array($mid);
-  $resultset = prepared_query($dbh,$sql,$values);
-  $row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC);
-  return $row['count'];
-}
-
-
+//handle the request
 if (isset($_REQUEST['mid'])){
   $pagemid = $_REQUEST['mid'];
 

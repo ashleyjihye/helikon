@@ -1,4 +1,13 @@
-<?php
+<!-- Ashley Thomas and Sasha Levy
+  Helikon
+  check2.php
+  5/19/14
+
+This file helps handle the dynamic checking of the username that user has entered
+when trying to sign in to see if it already exists in the database
+ -->
+
+ <?php
 require_once("MDB2.php");
 require_once("/home/cs304/public_html/php/MDB2-functions.php");
 require_once("athomas2-dsn.inc");

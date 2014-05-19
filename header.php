@@ -1,4 +1,14 @@
-<?php
+<!-- Ashley Thomas and Sasha Levy
+  Helikon
+  header.php
+  5/19/14
+
+This file includes the functions regarding sessions and logging in/out, as well
+as all the functions the other files use. We wanted to store them all in one file
+because many other files use the same functions
+ -->
+
+ <?php
 
 require_once("MDB2.php");
 require_once("/home/cs304/public_html/php/MDB2-functions.php");
@@ -6,11 +16,12 @@ require_once("athomas2-dsn.inc");
 
 $dbh = db_connect($athomas2_dsn);
 
+//logs someone in by checking the username and password pair and then setting a session key
 function logIn() {
   global $dbh;
   if(isset($_POST['loginusername'])) {
-    $username = $_POST['loginusername'];
-    if( loginCredentialsAreOkay($dbh,$username,$_POST['loginpassword']) ) {
+    $username = htmlspecialchars($_POST['loginusername']);
+    if( loginCredentialsAreOkay($dbh,$username,htmlspecialchars($_POST['loginpassword'])) ) {
       session_start();
       $_SESSION['username'] = $username;
       $_SESSION['loggedin'] = true;
@@ -22,37 +33,40 @@ function logIn() {
   }
 }
 
+//log out a user
 function logOut() {
   session_start();
   $_SESSION['loggedin'] = false;
   header('Location: index.php');
 }
 
+//sign in a user
 function signIn(){
   global $dbh;
   if (isset($_REQUEST['username'])) {
-    $name = $_REQUEST['name'];
-    $username = $_REQUEST['username'];
-    $email = $_REQUEST['email'];
+    $name = htmlspecialchars($_REQUEST['name']);
+    $username = htmlspecialchars($_REQUEST['username']);
+    $email = htmlspecialchars($_REQUEST['email']);
     $sql = "select * from user where username = ?";
     $resultset = prepared_query($dbh,$sql,$username);
     $numRows = $resultset->numRows();
-    if ($numRows == 1){
+    if ($numRows == 1){ //someone already has the username the user wanted
       echo "Sorry, that username has already been taken. Pleae choose another.";
       exit();
     }
-    else if ($_REQUEST['password'] == $_REQUEST['password1']){
-      $values = array($name,$username,$_REQUEST['password'],$email,);
+    else if (htmlspecialchars($_REQUEST['password']) == htmlspecialchars($_REQUEST['password1'])){ //everything checks out, so add them to database
+      $values = array($name,$username,htmlspecialchars($_REQUEST['password']),$email,);
       $sql = "insert into user (name,username,password,email) values (?,?,?,?)";
       $resultset = prepared_query($dbh,$sql,$values);
     }
-    else {
+    else { //passwords didn't match
       echo "Your passwords did not match. Please try again.";
       exit();
     }
   }
 }
 
+//see if user is logged in or logged out, and reroute them accordingly
 function checkLogInStatus() {
   session_start();
   if ($_SESSION['loggedin'] == true){
@@ -71,6 +85,7 @@ function checkLogInStatus() {
   }
 }
 
+//see if the username and password pair match
 function loginCredentialsAreOkay($dbh,$username,$password) {
     $check = "SELECT count(*) AS n FROM user WHERE username=? AND password=?";
     $resultset = prepared_query($dbh, $check, array($username,$password));
@@ -78,15 +93,7 @@ function loginCredentialsAreOkay($dbh,$username,$password) {
     return( $row[0] == 1 );
 }
 
-function printLoggedInNavBar() {
-    $script = $_SERVER['PHP_SELF'];
-    print <<<EOT
-<form method="post" action="$script">
-  <input type="submit" value="logout">
-</form>
-EOT;
-}
-
+//print the top of the page depending on the actual page you're on
 function printPageTop($title) {
     print <<<EOT
 <!DOCTYPE HTML>
@@ -105,6 +112,7 @@ function printPageTop($title) {
 EOT;
   }
 
+//create the navbar to be displayed on all pages
 function createNavBar($page) {
 
 echo '<nav class="navbar navbar-default" role="navigation">
@@ -117,7 +125,7 @@ echo '<nav class="navbar navbar-default" role="navigation">
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-     <a class="brand" href="' . $page . '"><img src="logofinal.png"></a> 
+     <a class="brand" href="' . $page . '"><img src="images/logofinal.png"></a> 
     </div>
 
     <!-- Collect the nav links, forms, and other content for toggling -->
@@ -126,7 +134,7 @@ echo '<nav class="navbar navbar-default" role="navigation">
         <li><a href="media.php">Media</a></li>
       </ul>
 
-      <form method="get" action="' . $page . '" class="navbar-nav navbar-form" role="search">
+      <form method="post" action="' . $page . '" class="navbar-nav navbar-form" role="search">
       <div class="form-group">
         <select class="form-control" name="tables">
         <option value="All">All</option>
@@ -136,7 +144,6 @@ echo '<nav class="navbar navbar-default" role="navigation">
       <option value="Albums">Albums</option>
       <option value="Songs">Songs</option>
       <option value="TVShows">TV Shows</option>
-      <option value="Genres">Genres</option>
       </select>
 
           <input type="text" class="form-control" name="sought" placeholder="Search">
@@ -159,12 +166,15 @@ echo '<nav class="navbar navbar-default" role="navigation">
 </nav>';
 }
 
+//creates stars with rating of a piece of media (used specifically on media pages)
 function createActualRating($rating, $numReviews){
   echo "Current Rating: <div class='star' id='star1'></div>
   <script>$('#star1').raty({ score: " . $rating . ", readOnly: true});</script>
    (based on " . $numReviews . " reviews)<br>";
 }
 
+//create a second set of stars that user can directly manipulate. results of user actions will be
+//dynamically sent to database using ajax, and page will be updated to reflect the user's new rating
 function createYourRating($mid, $yourRating, $uid){
   echo 'Your Rating: <div class="star" id="star2"></div>
   <script>
@@ -188,7 +198,16 @@ function createYourRating($mid, $yourRating, $uid){
   </script>';
 }
 
+//get the number of ratings this media has
+function getNumRatings($dbh,$mid){
+  $sql = "select count(uid) as count from ratings where mid = ?";
+  $values = array($mid);
+  $resultset = prepared_query($dbh,$sql,$values);
+  $row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC);
+  return $row['count'];
+}
 
+//get uid given username
 function getUid($dbh, $username) {
   $sql = "select uid from user where username = ?";
   $resultset = prepared_query($dbh, $sql, $username);
@@ -197,12 +216,12 @@ function getUid($dbh, $username) {
   return $uid;
 }
 
-
+//add a person to the database (used when user has submitted a form)
 function addPerson($dbh, $name, $uid, $description, $findperson, $person){
   $values = array($name);
   $getperson = prepared_query($dbh,$findperson,$values);
   $numrows = $getperson->numRows();
-  if ($numrows != 0){
+  if ($numrows != 0){ //person already exists in database
     echo "<p>There's already someone named " . $name .".<br>";
     while($row = $getperson->fetchRow(MDB2_FETCHMODE_ASSOC)) {
     $personid = $row['pid'];
@@ -219,12 +238,12 @@ function addPerson($dbh, $name, $uid, $description, $findperson, $person){
   return $personid;
 }
 
-
+//find a piece of media in database given specific information and queries
 function findMedia($dbh, $mediatitle, $mediatype, $findmedia, $findmediawithtype){
-  if ($mediatype == ""){
+  if ($mediatype == ""){ //user didn't specify a type
     $checkmedia = prepared_query($dbh,$findmedia,array($mediatitle));
   }
-  else{
+  else{ //user specified a type, so narrow down the query
     $checkmedia = prepared_query($dbh,$findmediawithtype,array($mediatitle,$mediatype));
   }
   $numrows = $checkmedia->numRows();
@@ -244,19 +263,25 @@ function findMedia($dbh, $mediatitle, $mediatype, $findmedia, $findmediawithtype
   }
 }
 
+//the following three functions do similar things, but since they are
+//slightly different, I decided to make them different functions
+//instead of having a large amount of parameters
+
+//get the user's profile picture given their uid
 function getUserPicture($uid, $dbh){
   $sql = "select picture from user where uid = ?";
   $resultset = prepared_query($dbh,$sql,$uid);
   $row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC);
-  if ($row['picture'] == "y"){
+  if ($row['picture'] == 'y'){
     $destfile = "userimages/$uid.jpg";
   }
-  else{
+  else{ //generic picture
     $destfile = "userimages/0.jpg";
   }
   return $destfile;
 }
 
+//get a person's picture given their pid
 function getPersonPicture($pid,$dbh){
   $sql = "select picture from person where pid = ?";
   $resultset = prepared_query($dbh,$sql,$pid);
@@ -270,13 +295,14 @@ function getPersonPicture($pid,$dbh){
   return $destfile;
 }
 
+//get a piece of media's picture given their mid
 function getMediaPicture($mid,$dbh){
   $destfile = "";
   $sql = "select picture from media where mid = ?";
   $resultset = prepared_query($dbh,$sql,$mid);
   $row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC);
   if ($row['picture'] != "" and $row['picture'] != null){
-    $destfile = $row['picture'];
+    $destfile = $row['picture']; //for media, picture link is stored directly in database
   }
   else{
     $destfile = "mediaimages/0.png";
@@ -284,7 +310,7 @@ function getMediaPicture($mid,$dbh){
   return $destfile;
 }
 
-
+//add a contribution between a piece of media and a person to the database
 function addContribution($dbh, $mediaid, $personid, $mediatitle, $personname, $findcontribution, $contribution){
   $contributionexists = prepared_query($dbh,$findcontribution,array($personid,$mediaid));
   $numrows = $contributionexists->numRows();
@@ -294,6 +320,7 @@ function addContribution($dbh, $mediaid, $personid, $mediatitle, $personname, $f
   }
 }
 
+//add a piece of media to the database
 function addMedia($dbh, $title, $type, $genre, $length, $uid, $albumid, $description, $findmediaquery, $media, $values){
   $mediaexists = prepared_query($dbh,$findmediaquery,$values);
   $numrows = $mediaexists->numRows();
@@ -315,7 +342,7 @@ function addMedia($dbh, $title, $type, $genre, $length, $uid, $albumid, $descrip
     while($row = $mediaexists->fetchRow(MDB2_FETCHMODE_ASSOC)) {
     $mediaid = $row['mid'];
     }
-    if ($type == "song"){
+    if ($type == "song"){ //give a special message for a song
       echo "<p>The song \"" . $title . "\" by the artist you inputted already existed.";
     }
     else {
@@ -325,11 +352,11 @@ function addMedia($dbh, $title, $type, $genre, $length, $uid, $albumid, $descrip
   return $mediaid;
 }
 
-
+//handles all editing media cases, with new artist, genre, length, title, new contributions, etc...
 function editMedia($uid, $mid, $title, $type, $genre, $length, $artist, $albumname, $deleteactorarry, $addactorarray, $description){
 
   global $dbh;
-  echo '<div id="results" style="display: none;">';
+  echo '<div id="results" style="display: none;">'; //some of these methods below print out, and we don't want to display these to the user
 
   $person = "Insert into person (name,addedby, description) values (?,?, ?)";
   $media = "Insert into media (title, genre, length, type, albumid, dateadded,addedby, rating, description) values (?,?,?,?,?,?,?,0,?)";
@@ -345,7 +372,7 @@ function editMedia($uid, $mid, $title, $type, $genre, $length, $artist, $albumna
   $values = array($title, $type, $genre, $length, $description, $mid,);
   $updatemedia = prepared_statement($dbh, $update, $values);
 
-
+  //artist might have been switched
   if ($type == "song" or $type == "album"){
     $deletecontribution = "delete from contribution where mid = ?";
     $delete = prepared_statement($dbh, $deletecontribution, $mid);
@@ -354,9 +381,9 @@ function editMedia($uid, $mid, $title, $type, $genre, $length, $artist, $albumna
     addContribution($dbh, $mid, $artistid, $title, $artist, $findcontribution, $contribution);
   }
 
-  if ($type == "song"){
+  if ($type == "song"){ //album might have been switched
     $newalbumid = findMedia($dbh, $albumname, "album", $findmedia, $findmediawithtype);
-    if ($newalbumid != null){
+    if ($newalbumid != null){ //either 0 results or more than 1 result
       $updatealbum = "update media set albumid = ? where mid = ?";
       $values = array($newalbumid, $mid);
       $updatemediaalbum = prepared_statement($dbh,$updatealbum,$values);
@@ -366,7 +393,7 @@ function editMedia($uid, $mid, $title, $type, $genre, $length, $artist, $albumna
     }
   }
 
-  if ($type == "tv" or $type == "movie"){
+  if ($type == "tv" or $type == "movie"){ //delete and add actors
     foreach ($deleteactorarry as $key => $value) {
       echo "$value";
       $deletecontribution1 = "delete from contribution where mid = ? and pid = ?";
@@ -378,12 +405,10 @@ function editMedia($uid, $mid, $title, $type, $genre, $length, $artist, $albumna
     }
 
   }
-
-
-
   echo "</div>";
 }
 
+//same as above, but for people
 function editPerson($pid, $name, $description, $deletecontributionarray, $addcontributionarray, $addcontributiontypearray){
 
   global $dbh;
@@ -398,12 +423,12 @@ function editPerson($pid, $name, $description, $deletecontributionarray, $addcon
   $values = array($name, $description, $pid,);
   $updateperson = prepared_statement($dbh, $update, $values);
 
-  foreach ($deletecontributionarray as $key => $value) {
+  foreach ($deletecontributionarray as $key => $value) { //delete movies/tv shows
     $deletecontribution1 = "delete from contribution where pid = ? and mid = ?";
     $delete = prepared_statement($dbh, $deletecontribution1, array($pid,$value));
   }
 
-  foreach ($addcontributionarray as $key => $value) {
+  foreach ($addcontributionarray as $key => $value) { //add movies/tv shows
     $newmediaid = findMedia($dbh, $value, $addcontributiontypearray[$key], $findmedia, $findmediawithtype);
     if ($newmediaid != null){
       addContribution($dbh, $newmediaid, $pid, $name, $value, $findcontribution, $contribution);
@@ -416,6 +441,7 @@ function editPerson($pid, $name, $description, $deletecontributionarray, $addcon
   echo "</div>";
 }
 
+//get the person who sang a song/album
 function getAlbumSongContributions($dbh, $mid){
   $sql = "select pid, name from person inner join contribution using (pid) where mid = ?";
   $resultset = prepared_query($dbh,$sql,$mid);

@@ -11,16 +11,6 @@ $page = $_SERVER['PHP_SELF'];
 $dbh = db_connect($athomas2_dsn);
 ?>
 
-<script src='jquery.tablesorter.js'></script>
-<script>
-$(document).ready(function() 
-    { 
-      $('table').tablesorter();
-     
-    } 
-);
-</script>
-
 
 <?php
 function printJquery() {
@@ -181,17 +171,6 @@ function getAlbumSongs($dbh,$values,$page){
   echo "</ul>";
 }
 
-function getAlbumSongContributions($dbh, $values){
-  $sql = "select pid, name from person inner join contribution using (pid) where mid = ?";
-  $resultset = prepared_query($dbh,$sql,$values);
-  echo "Artist: ";
-  while ($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)){
-    $pid = $row['pid'];
-    $name = $row['name'];
-    echo "<a href= \"person.php?pid=" . $pid . "\">$name</a><br>";
-  }
-}
-
 function getArtist($dbh, $values){
   $sql = "select name from person inner join contribution using (pid) where mid = ?";
   $resultset = prepared_query($dbh,$sql,$values);
@@ -205,7 +184,7 @@ function showRecentMedia($dbh,$page){
   $sql = "select * from media order by dateadded desc limit 10";
   $resultset = query($dbh,$sql);
   echo "Most Recently Added Items<br>";
-  echo "<table class='tablesorter table' style='width:80%;'><thead><tr><th>Title</th><th>Genre</th></tr></thead><tbody>";
+  echo "<table class='table' style='width:80%;'><thead><tr><th>Title</th><th>Genre</th></tr></thead><tbody>";
   while ($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)){
     $mid = $row['mid'];
     $title = $row['title'];
@@ -592,11 +571,14 @@ if (isset($_REQUEST['mid'])){
       }
 
       if ($type == "song"){
-        echo getAlbumSongContributions($dbh,$pagemid);
+        $artistarray = getAlbumSongContributions($dbh,$pagemid);
+        echo "Artist: <a href=\"person.php?pid=" . $artistarray['pid'] . "\"" . $artistarray['name'] . "</a><br>";
         echo "From Album: <a href= \"media.php?mid=" . $albumid . "\">$albumname</a><br>";
       }
       if ($type == "album"){
-        echo getAlbumSongContributions($dbh,$pagemid,$page);
+        $artistarray = getAlbumSongContributions($dbh,$pagemid);
+        echo "Artist: <a href=\"person.php?pid=" . $artistarray['pid'] . "\"" . $artistarray['name'] . "</a><br>";
+
       }
 
       echo "Description: $description<br><br>";
@@ -613,10 +595,6 @@ if (isset($_REQUEST['mid'])){
       else if ($type == 'album'){
         getAlbumSongs($dbh,$pagemid,$page);
       }
-
-
-
-
       commentForm($page, $pagemid, $uid);
       showComments($page,$dbh,$pagemid, $uid);
 

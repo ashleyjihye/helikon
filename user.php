@@ -45,14 +45,23 @@ function deleteLike($dbh, $values){
 function getLikesOwner($values, $dbh) {
    $sql = "select mid, title, type, likes.dateadded from user inner join likes using (uid) inner join media using (mid) where user.uid=? order by likes.dateadded desc limit 10";
    $resultset = prepared_query($dbh, $sql, $values);
-   echo "<form type='get' action='user.php'><input type='hidden' name='uid' value='" . $values . "'>Current Top Ten:<p><ol>";
-   $counter = 0;
-   while($detailrow = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
-     $title = $detailrow['title'];
-     $type = $detailrow['type'];
-     $mid = $detailrow['mid'];
-     echo "<li>$title ($type) <input type='checkbox' name='delete" . $counter . "' value='" . $mid . "'>Delete?</li><br>";
-     $counter++;
+   echo '<form method="post" enctype="multipart/form-data" action="user.php">
+        <input type="hidden" name="uid" value="' . $values . '"><p>
+        <p>Upload Profile Picture: <input type="file" name="imagefile" size="50"><br>';
+  $numRows = $resultset->numRows();
+  if ($numRows == 0){
+    echo "You currently have no media in your Top Ten.<br><br>";
+  }
+  else{
+    echo "Current Top Ten<ol>";
+     $counter = 0;
+     while($detailrow = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
+       $title = $detailrow['title'];
+       $type = $detailrow['type'];
+       $mid = $detailrow['mid'];
+       echo "<li>$title ($type) <input type='checkbox' name='delete" . $counter . "' value='" . $mid . "'>Delete?</li><br>";
+       $counter++;
+     }
    }
    echo "</ol><input type='submit' value='Make Changes'></form><br><br>";
 }
@@ -93,15 +102,6 @@ function processPicture($uid, $dbh){
   }
 
   return $destfile;
-}
-
-function printPictureForm(){
-  echo '<form method="post"
-      enctype="multipart/form-data"
-      action="user.php">
-      <p>Upload Profile Picture: <input type="file" name="imagefile" size="50">
-      <p><input type="submit">
-      </form>';
 }
 
 function addFriendButton($page, $array, $username){
@@ -260,7 +260,7 @@ if ($userarray == null){
   }
 
 if ($pageuid == getUid($dbh,$username)){
-  printPictureForm();
+ // printPictureForm();
   getLikesOwner($pageuid,$dbh);
   getFriendRequests($dbh,$page,$username);
 }

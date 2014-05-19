@@ -414,6 +414,16 @@ function editPerson($pid, $name, $description, $deletecontributionarray, $addcon
   echo "</div>";
 }
 
+function getAlbumSongContributions($dbh, $mid){
+  $sql = "select pid, name from person inner join contribution using (pid) where mid = ?";
+  $resultset = prepared_query($dbh,$sql,$mid);
+  while ($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)){
+    $pid = $row['pid'];
+    $name = $row['name'];
+    return array('pid'=>$pid, 'name'=>$name);
+  }
+}
+
 
 
 ?>

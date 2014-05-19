@@ -175,20 +175,22 @@ function displayMovies($values, $dbh, $status) {
   }
   else {
     $location;
-  echo "<table id='movieTable' class='tablesorter table'><thead><tr><th>Title</th><th>Genre</th></tr></thead><tbody>";
+  echo "<table id='movieTable' class='tablesorter table'><thead><tr><th>Title</th><th>Genre</th><th>Rating</th></tr></thead><tbody>";
   if($numMovies == 1) {
     while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
       $mid = $row['mid'];
       $title = $row['title'];
       $genre = $row['genre'];
       $location = "media.php?mid=" . $mid;
+      $rating = $row['rating'];
     }
     if ($status == "single"){
       header ("Location: media.php?mid=" . $mid);
     }
     else{
       echo "<h3>1 movie found</h3>";
-      echo "<tr><td><a href= \"media.php?mid=" . $mid . "\">$title</a></td><td>" . $genre . "</td></tr>";
+    echo "<tr><td><a href= \"media.php?mid=" . $mid . "\">$title</a></td><td>" . $genre . "</td><td><div style='display:none'>" . $rating . "</div><div class='star' id='star" . $mid . "'></div>
+  <script>$('#star" . $mid . "').raty({ score: " . $rating . ", readOnly: true});</script></td></tr>";
     }
   }
   else {
@@ -198,9 +200,10 @@ function displayMovies($values, $dbh, $status) {
     $genre = $row['genre'];
     $mid = $row['mid'];
     $type = $row['type'];
-    
-    echo "<tr><td><a href= \"media.php?mid=" . $mid . "\">$title</a></td><td>" . $genre . "</td></tr>";
-
+    $rating = $row['rating'];
+     echo "<tr><td><a href= \"media.php?mid=" . $mid . "\">$title</a></td><td>" . $genre . "</td><td><div style='display:none'>" . $rating . "</div><div class='star' id='star" . $mid . "'></div>
+  <script>$('#star" . $mid . "').raty({ score: " . $rating . ", readOnly: true});</script></td></tr>";
+ 
   }
   $location = -1;
 }
@@ -210,53 +213,6 @@ function displayMovies($values, $dbh, $status) {
 
 }
 }
-
-function displayGenres($values, $dbh, $status) {
-  $sql = "select title, mid, rating, type, genre from media where genre like concat('%', ?, '%') order by genre";
-  $resultset = prepared_query($dbh, $sql, $values);
-  $numMedia = $resultset->numRows();
-  if ($numMedia == 0) {
-    echo "0 titles with that genre found";
-    return 0;
-  }
-  else {
-
-    $location;
-    echo "<table id='genreTable' class='tablesorter table'><thead><tr><th>Title</th><th>Genre</th></tr></thead><tbody>";
-    if($numMedia == 1) {
-     while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
-      $mid = $row['mid'];
-      $title = $row['title'];
-      $genre = $row['genre'];
-      $location = "media.php?mid=" . $mid;
-    }
-    if ($status == "single"){
-      header ("Location: media.php?mid=" . $mid);
-    }
-    else{
-      echo "<h3>1 title found</h3>";
-      echo "<tr><td><a href= \"media.php?mid=" . $mid . "\">$title</a></td><td>" . $genre . "</td></tr>";
-    }
-  }
-  else {
-    echo"<h3>$numMedia titles found</h3>";
-  while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
-    $title = $row['title'];
-    $genre = $row['genre'];
-    $mid = $row['mid'];
-    $type = $row['type'];
-    
-    echo "<tr><td><a href= \"media.php?mid=" . $mid . "\">$title</a></td><td>" . $genre . "</td></tr>";
-
-  }
-  $location = -1;
-}
-  echo "</tbody></table>";
-  return $location;
-}
-}
-
-
 
 function displayTVshows($values, $dbh, $status) {
   $sql = "select * from media where title like concat('%', ?, '%') and type = 'tv' order by title";
@@ -268,20 +224,22 @@ function displayTVshows($values, $dbh, $status) {
   }
   else {
     $location;
-  echo "<table id='tvTable' class='tablesorter table'><thead><tr><th>Title</th><th>Genre</th></tr></thead><tbody>";
+  echo "<table id='tvTable' class='tablesorter table'><thead><tr><th>Title</th><th>Genre</th><th>Rating</th></tr></thead><tbody>";
   if($numShows == 1) {
     while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
       $mid = $row['mid'];
       $title = $row['title'];
       $genre = $row['genre'];
       $location = "media.php?mid=" . $mid;
+      $rating = $row['rating'];
     }
     if ($status == "single"){
       header ("Location: media.php?mid=" . $mid);
     }
     else{
       echo "<h3>1 tv show found</h3>";
-      echo "<tr><td><a href= \"media.php?mid=" . $mid . "\">$title</a></td><td>" . $genre . "</td></tr>";
+    echo "<tr><td><a href= \"media.php?mid=" . $mid . "\">$title</a></td><td>" . $genre . "</td><td><div style='display:none'>" . $rating . "</div><div class='star' id='star" . $mid . "'></div>
+  <script>$('#star" . $mid . "').raty({ score: " . $rating . ", readOnly: true});</script></td></tr>";
     }
   }
   else {
@@ -291,8 +249,10 @@ function displayTVshows($values, $dbh, $status) {
     $genre = $row['genre'];
     $mid = $row['mid'];
     $type = $row['type'];
+    $rating = $row['rating'];
     
-    echo "<tr><td><a href= \"media.php?mid=" . $mid . "\">$title</a></td><td>" . $genre . "</td></tr>";
+    echo "<tr><td><a href= \"media.php?mid=" . $mid . "\">$title</a></td><td>" . $genre . "</td><td><div style='display:none'>" . $rating . "</div><div class='star' id='star" . $mid . "'></div>
+  <script>$('#star" . $mid . "').raty({ score: " . $rating . ", readOnly: true});</script></td></tr>";
 
   }
   $location = -1;
@@ -315,7 +275,7 @@ function displayAlbums($values, $dbh, $status) {
   else {
 
     $location;
-  echo "<table id='albumTable' class='tablesorter table'><thead><tr><th>Title</th><th>Genre</th></tr></thead><tbody>";
+  echo "<table id='albumTable' class='tablesorter table'><thead><tr><th>Title</th><th>Artist</th><th>Genre</th><th>Rating</th></tr></thead><tbody>";
 
   if($numAlbums == 1) {
     while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
@@ -323,13 +283,18 @@ function displayAlbums($values, $dbh, $status) {
       $title = $row['title'];
       $genre = $row['genre'];
       $location = "media.php?mid=" . $mid;
+      $artistarray = getAlbumSongContributions($dbh,$mid);
+      $rating = $row['rating'];
     }
     if ($status == "single"){
       header ("Location: media.php?mid=" . $mid);
     }
     else{
       echo "<h3>1 album found</h3>";
-      echo "<tr><td><a href= \"media.php?mid=" . $mid . "\">$title</a></td><td>" . $genre . "</td></tr>";
+      $pid = $artistarray['pid'];
+      $name = $artistarray['name'];
+      echo "<tr><td><a href= \"media.php?mid=$mid\">$title</a></td><td><a href= \"person.php?pid=$pid\">$name</a></td><td>" . $genre . "</td><td><div style='display:none'>" . $rating . "</div><div class='star' id='star" . $mid . "'></div>
+  <script>$('#star" . $mid . "').raty({ score: " . $rating . ", readOnly: true});</script></td></tr>";
     }
   }
   else {
@@ -339,9 +304,12 @@ function displayAlbums($values, $dbh, $status) {
     $genre = $row['genre'];
     $mid = $row['mid'];
     $type = $row['type'];
-    
-    echo "<tr><td><a href= \"media.php?mid=" . $mid . "\">$title</a></td><td>" . $genre . "</td></tr>";
-
+    $artistarray = getAlbumSongContributions($dbh,$mid); 
+    $pid = $artistarray['pid'];
+    $name = $artistarray['name'];
+    $rating = $row['rating'];
+    echo "<tr><td><a href= \"media.php?mid=$mid\">$title</a></td><td><a href= \"person.php?pid=$pid\">$name</a></td><td>" . $genre . "</td><td><div style='display:none'>" . $rating . "</div><div class='star' id='star" . $mid . "'></div>
+  <script>$('#star" . $mid . "').raty({ score: " . $rating . ", readOnly: true});</script></td></tr>";
   }
   $location = -1;
 }
@@ -361,20 +329,25 @@ function displaySongs($values, $dbh, $status) {
   else {
 
     $location;
-  echo "<table id='songTable' class='tablesorter table'><thead><tr><th>Title</th><th>Genre</th></tr></thead><tbody>";
+  echo "<table id='songTable' class='tablesorter table'><thead><tr><th>Title</th><th>Artist</th><th>Genre</th><th>Rating</th></tr></thead><tbody>";
   if($numSongs == 1) {
     while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
       $mid = $row['mid'];
       $title = $row['title'];
       $genre = $row['genre'];
       $location = "media.php?mid=" . $mid;
+      $rating = $row['rating'];
     }
     if ($status == "single"){
       header ("Location: media.php?mid=" . $mid);
     }
     else{
       echo "<h3>1 song found</h3>";
-      echo "<tr><td><a href= \"media.php?mid=" . $mid . "\">$title</a></td><td>" . $genre . "</td></tr>";
+      $artistarray = getAlbumSongContributions($dbh,$mid); 
+      $pid = $artistarray['pid'];
+      $name = $artistarray['name'];
+      echo "<tr><td><a href= \"media.php?mid=$mid\">$title</a></td><td><a href= \"person.php?pid=$pid\">$name</a></td><td>" . $genre . "</td><td><div style='display:none'>" . $rating . "</div><div class='star' id='star" . $mid . "'></div>
+  <script>$('#star" . $mid . "').raty({ score: " . $rating . ", readOnly: true});</script></td></tr>";
     }
   }
   else {
@@ -384,9 +357,13 @@ function displaySongs($values, $dbh, $status) {
     $genre = $row['genre'];
     $mid = $row['mid'];
     $type = $row['type'];
-    
-    echo "<tr><td><a href= \"media.php?mid=" . $mid . "\">$title</a></td><td>" . $genre . "</td></tr>";
-
+    $artistarray = getAlbumSongContributions($dbh,$mid); 
+    $pid = $artistarray['pid'];
+    $name = $artistarray['name'];
+    $rating = $row['rating'];
+    echo "<tr><td><a href= \"media.php?mid=$mid\">$title</a></td><td><a href= \"person.php?pid=$pid\">$name</a></td><td>" . $genre . "</td><td><div style='display:none'>" . $rating . "</div><div class='star' id='star" . $mid . "'></div>
+  <script>$('#star" . $mid . "').raty({ score: " . $rating . ", readOnly: true});</script></td></tr>";
+  
   }
   $location = -1;
 }
@@ -450,9 +427,7 @@ function getTrendingMedia($dbh){
     } elseif ($table=="Songs") { //search only within media
       displaySongs($sought, $dbh, "single");
 
-    } elseif ($table=="Genres"){
-      displayGenres($sought,$dbh, "single");
-    }
+    } 
     elseif ($table=="All") { //search within media and actors  
       $resultset = array();  
       echo "<h1>Users:</h1><br>";
@@ -467,13 +442,11 @@ function getTrendingMedia($dbh){
       $resultset['5'] = displaySongs($sought, $dbh, "multiple");
       echo "<h1>Albums:</h1><br>";
       $resultset['6'] = displayAlbums($sought, $dbh, "multiple");
-      echo "<h1>Genres:</h1><br>";
-      $resultset['7'] = displayGenres($sought, $dbh, "multiple");
 
       $num0s = 0;
       $nummultiples = 0;
       $final = 0;
-      for ($i=1; $i <= 7; $i++) { 
+      for ($i=1; $i <= 6; $i++) { 
         if (gettype($resultset[$i]) == "integer" and $resultset[$i] == 0){
           $num0s++;
         }
@@ -484,7 +457,7 @@ function getTrendingMedia($dbh){
           $final = $resultset[$i];
         }
       }
-      if ($num0s == 6 and $nummultiples == 0){
+      if ($num0s == 5 and $nummultiples == 0){
         header ("Location: " . $final);
       }
     }

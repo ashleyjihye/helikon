@@ -50,13 +50,13 @@ create table media (
        rating decimal(4,3),
        title varchar(50),
        dateadded datetime,
-       description varchar(1000),
-       genre enum('action','comedy','adventure','documentary','drama','mystery','reality','sitcom','anime','children','classic','faith','foreign','horror','independent','musical','romance','scifi','fantasy','romance','thriller','medical','procedural','hiphop','pop','classical','jazz','rap','country','alternative','faith','rock','blues','children','dance','electronic','easy listening','r&b','soul','reggae','metal','soundtrack','foreign','indie','kpop','dubstep'),
+       description varchar(3000),
+       genre varchar(25),
        length varchar(20),
-       preview varchar(200), -- will have a link to a video or stream of the media
        `type` enum('tv','movie','song','album'),
        picture varchar(200), -- will have link to picture
        albumid int,
+       addedby int,
        INDEX (albumid),
        foreign key (albumid) references media(mid) on delete restrict
 )

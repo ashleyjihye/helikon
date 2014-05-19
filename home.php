@@ -373,8 +373,9 @@ function displaySongs($values, $dbh, $status) {
 }
 
 function getTrendingMedia($dbh){
-    echo "<h1>Trending Media</h1>";
-    $sql = "select likes.mid as mid, count(mid) as count, title from likes inner join media using (mid) group by mid order by count(mid) desc limit 50";    
+    echo "<h1>Suggestions</h1>";
+    echo "<h3>Trending Media</h3>";
+    $sql = "select likes.mid as mid, count(mid) as count, title from likes inner join media using (mid) group by mid order by count(mid) desc limit 20";    
     $resultset = query($dbh,$sql);
     echo "<table id='trendingTable' class='tablesorter table';><thead><tr><th>Title</th><th>Likes</th></tr></thead><tbody>";
     while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
@@ -388,7 +389,25 @@ function getTrendingMedia($dbh){
       echo "<tr><td><a href= \"media.php?mid=" . $mid . "\">$title</a></td><td>" . $count . " people like this</td></td></tr>";
       }
     }
-    echo "</tbody></table>";
+    echo "</tbody></table><br>";
+}
+
+function getUsersInCommon($dbh, $uid){
+  $sql = "select count(uid) as count, uid, name from likes inner join user using (uid) where mid in (select mid from likes where uid = ?) and uid != ? group by uid limit 20";
+  $resultset = prepared_query($dbh,$sql,array($uid,$uid));
+  $numRows = $resultset->numRows();
+  if ($numRows == 0){
+    return;
+  }
+  echo "<br><h3>Users You Might Like</h3><br>";
+  echo "<table id='commonTable' class='table';><thead><tr><th>User</th><th># Likes in Common</th></tr></thead><tbody>";
+  while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
+    $count= $row['count'];
+    $name = $row['name'];
+    $altuid = $row['uid'];
+    echo "<tr><td><a href= \"user.php?uid=" . $altuid . "\">$name</a></td><td>" . $count . "</td></td></tr>";
+  }
+  echo "</tbody></table>";
 }
 
 
@@ -399,10 +418,6 @@ function getTrendingMedia($dbh){
 
   if (isset($_GET['logout'])){
     logOut();
-  }
-
-  else if (isset($_GET['friends'])){
-    displayFriends($dbh);
   }
 
  else if (isset($_GET['sought'])) {
@@ -430,17 +445,17 @@ function getTrendingMedia($dbh){
     } 
     elseif ($table=="All") { //search within media and actors  
       $resultset = array();  
-      echo "<h1>Users:</h1><br>";
+      echo "<h1>Users:</h1>";
       $resultset['1'] = displayUsers($sought, $dbh, "multiple");
-      echo "<h1>People:</h1><br>";
+      echo "<br><h1>People:</h1>";
       $resultset['2'] = displayNames($sought, $dbh, "multiple");
-      echo "<h1>Movies:</h1><br>";
+      echo "<br><h1>Movies:</h1>";
       $resultset['3'] = displayMovies($sought, $dbh, "multiple");
-      echo "<h1>TV Shows:</h1><br>";
+      echo "<br><h1>TV Shows:</h1>";
       $resultset['4'] = displayTVshows($sought, $dbh, "multiple");
-      echo "<h1>Songs:</h1><br>";
+      echo "<br><h1>Songs:</h1>";
       $resultset['5'] = displaySongs($sought, $dbh, "multiple");
-      echo "<h1>Albums:</h1><br>";
+      echo "<br><h1>Albums:</h1>";
       $resultset['6'] = displayAlbums($sought, $dbh, "multiple");
 
       $num0s = 0;
@@ -464,6 +479,7 @@ function getTrendingMedia($dbh){
   }
   else{
     getTrendingMedia($dbh);
+    getUsersInCommon($dbh,getUid($dbh,$_SESSION['username']));
   }
 
 

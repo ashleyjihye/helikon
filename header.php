@@ -148,7 +148,6 @@ echo '<nav class="navbar navbar-default" role="navigation">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown">Account<b class="caret"></b></a>
           <ul class="dropdown-menu">
             <li><a href="user.php">My Profile</a></li>
-            <li><a href="home.php?friends">Friends</a></li>
             <li><a href="adddata.php">Add to Database</a></li>
             <li class="divider"></li>
             <li><a href="' . $page . '?logout">Logout</a></li>
@@ -276,8 +275,11 @@ function getMediaPicture($mid,$dbh){
   $sql = "select picture from media where mid = ?";
   $resultset = prepared_query($dbh,$sql,$mid);
   $row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC);
-  if ($row['picture'] != "" or $row['picture'] != null){
+  if ($row['picture'] != "" and $row['picture'] != null){
     $destfile = $row['picture'];
+  }
+  else{
+    $destfile = "mediaimages/0.png";
   }
   return $destfile;
 }

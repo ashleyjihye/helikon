@@ -13,13 +13,29 @@ $dbh = db_connect($athomas2_dsn);
 #picture {
 float:left;
 display:inline-block;
+margin: 20px;
 }
+
+#picture1 {
+float:left;
+display:inline-block;
+margin:50px;
+margin-top:20px;
+margin-left:20px;
+}
+
 #getLikesOwner{
 float:left;
 display:inline-block;
 width:25%;
-
 }
+
+#getLikes{
+  float:left;
+ display:inline-block;
+
+ }
+
 .friendsdiv{
  width: 25%;
  display:inline-block;
@@ -54,17 +70,18 @@ function getUser($values, $dbh) {
 }
 
 function getLikes($values, $dbh) {
-  echo "<div id='getLikes'>";
+   echo "</div>";
+  echo "<div id='getLikesOwner'>";
    $sql = "select title, type, likes.dateadded from user inner join likes using (uid) inner join media using (mid) where user.uid=? order by likes.dateadded desc limit 10";
    $resultset = prepared_query($dbh, $sql, $values);
-   echo "Current Top Ten:<p><ol>";
+   echo "<h3>Current Top Ten:</h3><ul>";
    $count = 1;
    while($detailrow = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {
      $title = $detailrow['title'];
      $type = $detailrow['type'];
    echo "<li>$title ($type) </li>";
    }
-   echo "</ol>";
+   echo "</ul>";
    echo "</div>";
 }
 
@@ -153,10 +170,7 @@ function addFriendButton($page, $array, $username){
   echo "</div>";
 }
 function displayFriends($dbh){
-  $sql = "select uid from user where username = ? order by name";
-  $resultset = prepared_query($dbh, $sql, $_SESSION['username']);
-  $row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC);
-  $useruid = $row['uid'];
+  $useruid = getUid($dbh,$_SESSION['username']);
   $sql = "select uid, friendid from friends where (uid = ? or friendid = ?) and state = '1'";
   $resultset = prepared_query($dbh, $sql, array($useruid,$useruid,));
   $numpeople = $resultset->numRows();
@@ -186,6 +200,38 @@ function displayFriends($dbh){
   }
   echo "</div>";
 }
+
+function displayFriendsNotUser($dbh,$theuid){
+  $sql = "select uid, friendid from friends where (uid = ? or friendid = ?) and state = '1'";
+  $resultset = prepared_query($dbh, $sql, array($theuid,$theuid,));
+  $numpeople = $resultset->numRows();
+  $thefriend;
+  echo "<div class='friendsdiv'>";
+  if ($numpeople == 1) {
+    echo "<h3 style=float:'left';>1 friend found</h3>";
+  }
+  else{    
+    echo "<h3 style=float:'left';>$numpeople friends found</h3>";
+  }
+  while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)){
+    $uid = $row['uid'];
+    $friendid = $row['friendid'];
+    if ($theuid == $uid){
+      $thefriend = $friendid;
+    }
+    else{
+      $thefriend = $uid;
+    }
+    $sql1 = "select name from user where uid = ?";
+    $resultset1 = prepared_query($dbh, $sql1, $thefriend);
+    $row1 = $resultset1->fetchRow(MDB2_FETCHMODE_ASSOC); 
+    $name = $row1['name'];
+    $picture = getUserPicture($thefriend,$dbh);
+    echo "<a href= \"user.php?uid=" . $thefriend . "\"><img width=30 height=30 class='media-object' src='" . $picture . "'>$name</a><br><br>";
+  }
+  echo "</div>";
+}
+
 function areFriends($dbh, $array, $username){
   $uid = getUid($dbh, $username);
   $sql = "select * from friends where (uid = ? or friendid = ?) and (friendid = ? or uid = ?);";
@@ -300,7 +346,14 @@ if ($userarray == null){
 
   $destfile = processPicture($pageuid,$dbh);
   if( $destfile != "") {
-    echo "<div id='picture'><p><img width=200 height=200 src='$destfile'><p>\n";
+    if ($pageuid == getUid($dbh,$username)){
+    echo "<div id='picture'><p style='float:left; display:inline-block;'><img width=200 height=200 src='$destfile'><p>\n";
+
+    }
+    else{
+    echo "<div id='picture1'><p style='float:left; display:inline-block;'><img width=200 height=200 src='$destfile'><p>\n";
+
+    }
   }
 
   if (isset($_REQUEST['addfriend'])){
@@ -317,7 +370,7 @@ if ($userarray == null){
   }
 
  if (areFriends($dbh, $userarray, $username) == 1){
-    echo "You are friends.<br><br>";
+    echo "<h3>You are friends.</h3><br><br>";
   }
   else if (areFriends($dbh, $userarray, $username) == 0){
     echo "Pending friend request.<br><br>";
@@ -339,7 +392,9 @@ if ($pageuid == getUid($dbh,$username)){
   getFriendRequests($dbh,$page,$username);
 }
 else{
+  echo "</div>";
   getLikes($userarray['uid'], $dbh);
+  displayFriendsNotUser($dbh, $pageuid);
 }
 
 ?>

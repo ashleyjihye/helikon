@@ -76,35 +76,49 @@ function editPersonPage($pagepid, $name, $description){
   $contributionarray = getPersonContributions($pagepid, $dbh, $page);
   echo "</div>";
   $mediacontributions = $contributionarray['mediacontributions'];
-  echo '<form method="post" action="' . $page . '" enctype="multipart/form-data">
+  echo '<form style="width:1000px;" class="form-horizontal" method="post" action="' . $page . '" enctype="multipart/form-data">
+<div class="form-group">
   <input type="hidden" name="pid" value="' . $pagepid . '">
   <input type="hidden" name="edited">
-  <p>Upload Picture: <input type="file" name="imagefile" size="50"><p>
+<label for="uploadPic" class="col-sm-2 control-label">Upload Picture</label>
+<div class="col-sm-10">
 
-  Name: <input type="text" name="name" value="' . $name . '"><br>
-  Description: <textarea rows="4" cols="50" name="description">' . $description . '</textarea><br>';
+  <input type="file" class="form-control" name="imagefile" size="50">
+</div>
+<label for="name" class="col-sm-2 control-label">Name</label>
+<div class="col-sm-10">
 
-  echo '<br>Delete Contributions: <br>';
+   <input type="text" name="name" class="form-control" value="' . $name . '"></div>
+<label for="description" class="col-sm-2 control-label">Description</label>
+<div class="col-sm-10">
+
+  <textarea rows="4" cols="50" class="form-control" name="description">' . $description . '</textarea></div>';
+
+
   $counter = 0;
 
   if ($mediacontributions != null){
+  echo '<label for="deletecontribution" class="col-sm-2 control-label">Delete Contributions</label><div class="col-sm-10">';
     foreach ($mediacontributions as $key => $value) {
-      echo $value['title'] . ' <input type="checkbox" name="media' . $counter . '" value="' . $value['mid'] . '"><br>';
+      echo '<h4>' . $value['title'] . '<p><input type="checkbox" class="form-control" name="media' . $counter . '" value="' . $value['mid'] . '"></h4><br>';
           $counter++;
     }
+    echo "</div>";
   }
 
-  echo '<br>Add Contributions: <br>';
+  echo '<p><label for="addcontribution" class="col-sm-2 control-label">Add Contributions</label><div class="col-sm-10">';
+
   for ($counter = 0; $counter < 5; $counter++){
-    echo '<input type="text" name="newmedia' . $counter . '">
-    <select name="newmediatype' . $counter . '" id="newmediatype">
+    
+    echo '<input type="text" style= "width: 40%;" class="form-control"name="newmedia' . $counter . '">
+    <select style="width:100px;" class="form-control" name="newmediatype' . $counter . '" id="newmediatype>
       <option selected="selected" value="">None
       <option value="movie">Movie
       <option value="tv">TV
       </select><br>';
   }
 
-  echo '<br><input type="submit" value="Make Changes"></form>';
+  echo '<br><input type="submit" value="Make Changes" class="btn btn-default"></div></div></form>';
 }
 
 function processPicture($pid, $dbh){

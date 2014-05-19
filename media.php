@@ -171,15 +171,6 @@ function getAlbumSongs($dbh,$values,$page){
   echo "</ul>";
 }
 
-function getArtist($dbh, $values){
-  $sql = "select name from person inner join contribution using (pid) where mid = ?";
-  $resultset = prepared_query($dbh,$sql,$values);
-  while ($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)){
-    $name = $row['name'];
-  }
-  return $name;
-}
-
 function showRecentMedia($dbh,$page){
   $sql = "select * from media order by dateadded desc limit 10";
   $resultset = query($dbh,$sql);
@@ -341,12 +332,12 @@ function getMediaInfoFromItunes($dbh,$mid,$artist){
   $final = "";
 
   if ($type == "song"){
-    $words = str_replace(" ","+",$title) . "+" . str_replace(" ","+",getArtist($dbh,$mid));
+    $words = str_replace(" ","+",$title) . "+" . str_replace(" ","+",$artist);
     $json =  file_get_contents('http://itunes.apple.com/search?term='.$words.'&limit=25&media=music&entity=song'); 
   }  
 
   else if ($type == "album"){
-    $words = str_replace(" ","+",$title) . "+" . str_replace(" ","+",getArtist($dbh,$mid));
+    $words = str_replace(" ","+",$title) . "+" . str_replace(" ","+",$artist);
     $json =  file_get_contents('http://itunes.apple.com/search?term='.$words.'&limit=25&media=music&entity=album'); 
   } 
 
@@ -387,7 +378,7 @@ function processPicture($mid, $dbh){
 
   $destfile = "";
 
-  if (isset($_FILES['imagefile'])){
+  if (isset($_FILES['imagefile']) and $_FILES["imagefile"]["error"] == 0){
     if( $_FILES['imagefile']['error'] != UPLOAD_ERR_OK ) {
         print "<P>Upload error: " . $_FILES['imagefile']['error'];
     } 
@@ -531,7 +522,8 @@ if (isset($_REQUEST['mid'])){
       editMedia($uid, $mid, $title, $type, $genre, $length, $artist, $albumname, $deleteactorarray, $addactorarray, $description);
     }
 
-    getMediaInfoFromItunes($dbh,$pagemid,getArtist($dbh,$pagemid));
+    $artistarray = getAlbumSongContributions($dbh,$pagemid);
+    getMediaInfoFromItunes($dbh,$pagemid,$artistarray['name']);
     $picture = processPicture($pagemid,$dbh);
     $mediaarray = getMedia($pagemid, $dbh);
 
@@ -577,7 +569,7 @@ if (isset($_REQUEST['mid'])){
       }
       if ($type == "album"){
         $artistarray = getAlbumSongContributions($dbh,$pagemid);
-        echo "Artist: <a href=\"person.php?pid=" . $artistarray['pid'] . "\"" . $artistarray['name'] . "</a><br>";
+        echo "Artist: <a href=\"person.php?pid=" . $artistarray['pid'] . "\">" . $artistarray['name'] . "</a><br>";
 
       }
 

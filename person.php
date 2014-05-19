@@ -111,7 +111,7 @@ function processPicture($pid, $dbh){
 
   $destfile = "";
 
-  if (isset($_FILES['imagefile'])){
+  if (isset($_FILES['imagefile']) and $_FILES["imagefile"]["error"] == 0){
     if( $_FILES['imagefile']['error'] != UPLOAD_ERR_OK ) {
         print "<P>Upload error: " . $_FILES['imagefile']['error'];
     } 

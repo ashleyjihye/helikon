@@ -49,7 +49,7 @@ align:right;
 }
 </style>
 <?php
-function displayNames($values, $dbh) {
+function displayNames($values, $dbh, $status) {
   $sql = "select * from person where name like concat ('%', ?, '%') order by name";
   $resultset = prepared_query($dbh, $sql, $values);
   $numpeople = $resultset->numRows();
@@ -374,7 +374,7 @@ function displaySongs($values, $dbh, $status) {
 
 function getTrendingMedia($dbh){
     echo "<h1>Trending Media</h1>";
-    $sql = "select likes.mid as mid, count(mid) as count, title from likes inner join media using (mid) group by mid order by count(mid) desc limit 20";    
+    $sql = "select likes.mid as mid, count(mid) as count, title from likes inner join media using (mid) group by mid order by count(mid) desc limit 50";    
     $resultset = query($dbh,$sql);
     echo "<table id='trendingTable' class='tablesorter table';><thead><tr><th>Title</th><th>Likes</th></tr></thead><tbody>";
     while($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)) {

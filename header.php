@@ -401,10 +401,9 @@ function editMedia($uid, $mid, $title, $type, $genre, $length, $artist, $albumna
       addContribution($dbh, $mid, $artistid, $title, $value, $findcontribution, $contribution);
     }
   }
-  echo "</div>";
   if ($type == "album"){
     foreach ($deletesongarray as $key => $value){
-      prepared_statement($dbh,$getridofalbumid,array(null,$value));
+      prepared_statement($dbh,$changealbumid,array(null,$value));
     }
     foreach ($addsongarray as $key => $value){
       $findthesong = prepared_query($dbh,$findmediawithtype,array($value,"song"));
@@ -421,7 +420,7 @@ function editMedia($uid, $mid, $title, $type, $genre, $length, $artist, $albumna
       }
     }
   }
-//  echo "</div>";
+  echo "</div>";
 }
 
 //same as above, but for people

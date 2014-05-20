@@ -21,6 +21,10 @@ $dbh = db_connect($athomas2_dsn);
 #currentRating {
 display:inline-block;
 }
+
+#myRating {
+  display:inline-block;
+}
 .category {
   margin-left: 30px;
 }
@@ -759,7 +763,7 @@ $(document).ready(function (){
       $myRating = getYourRating($dbh,$uid,$pagemid);
       echo "<div id='currentRating'>";
       createActualRating($rating, $numRatings);
-      echo "<br>";
+      echo "</div><br><div id='myRating'>";
       createYourRating($pagemid, $myRating, $uid);
       echo "</div>";
       echo "<br>Genre: $genre<br>";

@@ -193,10 +193,30 @@ function getMedia($values, $dbh) {
    }
 }
 
+//get all songs from an album in an array
+function getAlbumSongsAsArray($dbh,$values,$page){
+  $sql = "select * from media where albumid = ?";
+  $resultset = prepared_query($dbh,$sql,$values);
+  $albumarray = array();
+  $counter = 0;
+  while ($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)){
+    $mid = $row['mid'];
+    $title = $row['title'];
+    $albumarray[$counter] = array('mid' => $mid, 'title' => $title);
+    $counter++;
+  } 
+  return $albumarray;
+}
+
 //get all songs from an album
 function getAlbumSongs($dbh,$values,$page){
   $sql = "select * from media where albumid = ?";
   $resultset = prepared_query($dbh,$sql,$values);
+  $numRows = $resultset -> numRows();
+  if ($numRows == 0){
+    echo "<h3 id='albumsongheader'>No Songs</h3><br>";
+    return;
+  }
   echo "<h3 id='albumsongheader'>Songs</h3><ul>";
   while ($row = $resultset->fetchRow(MDB2_FETCHMODE_ASSOC)){
     $mid = $row['mid'];
@@ -209,7 +229,7 @@ function getAlbumSongs($dbh,$values,$page){
       echo "<li><a href= \"media.php?mid=" . $mid . "\">$title</a><br><br></li>";
     }
   } 
-  echo "</ul>";
+  echo "</ul><br>";
 }
 
 //show media that's most recently been added (sorted by dateadded)
@@ -472,6 +492,7 @@ function processPicture($mid, $dbh){
 //different page for editing the media form
 function editMediaPage($mediaarray){
   global $page;
+  global $dbh;
 
   //get all these values to have as values in the form
   $mid = $mediaarray['mid'];
@@ -486,80 +507,101 @@ function editMediaPage($mediaarray){
   $contributionarray = $mediaarray['contributionarray'];
 
   echo '<form class="form-horizontal" style="width:1000px;" method="post" action="' . $page . '" enctype="multipart/form-data">
-<div class="form-group">
-  <input type="hidden" name="mid" value="' . $mid . '">
-  <input type="hidden" name="edited">
-<label for="uploadPic" class="col-sm-2 control-label">Upload Picture</label>
-<div class="col-sm-10">
-  <input type="file" name="imagefile" size="50" class="form-control">
-</div>
- <label for="title" class="col-sm-2 control-label">Title</label>
-<div class="col-sm-10">
-
- <input type="text" class="form-control" name="title" value="' . $title . '"><br>
-</div>
-<label for="genre" class="col-sm-2 control-label">Genre</label>
-<div class="col-sm-10">
-
-  <input type="text" name="genre" class="form-control" value="' . $genre . '"><br>
-</div>
-<label for="length" class="col-sm-2 control-label">Length</label>
-<div class="col-sm-10">
-
- <input type="text" name="length" class="form-control" value="' . $length . '"><br>
-</div>
-<label for="type" class="col-sm-2 control-label">Type</label>
-<div class="col-sm-10">
-
-<input type="text" name="type" class="form-control" value="' . $type . '"><br>
-  </div>';
+    <div class="form-group">
+    <input type="hidden" name="mid" value="' . $mid . '">
+    <input type="hidden" name="edited">
+    <label for="uploadPic" class="col-sm-2 control-label">Upload Picture</label>
+    <div class="col-sm-10">
+    <input type="file" name="imagefile" size="50" class="form-control">
+    </div>
+    <label for="title" class="col-sm-2 control-label">Title</label>
+    <div class="col-sm-10">
+    <input type="text" class="form-control" name="title" value="' . $title . '"><br>
+    </div>
+    <label for="genre" class="col-sm-2 control-label">Genre</label>
+    <div class="col-sm-10">
+    <input type="text" name="genre" class="form-control" value="' . $genre . '"><br>
+    </div>
+    <label for="length" class="col-sm-2 control-label">Length</label>
+    <div class="col-sm-10">
+    <input type="text" name="length" class="form-control" value="' . $length . '"><br>
+    </div>
+    <label for="type" class="col-sm-2 control-label">Type</label>
+    <div class="col-sm-10">
+    <input type="text" name="type" class="form-control" value="' . $type . '"><br>
+    </div>';
 
   //artist
   if ($type == "song" or $type == "album"){
     echo '<label for="artist" class="col-sm-2 control-label">Artist</label>
-<div class="col-sm-10">
-<input type="text" name="artist" class="form-control" value="' . $contributionarray[0]['name'] . '"><br></div>';
+      <div class="col-sm-10">
+      <input type="text" name="artist" class="form-control" value="' . $contributionarray[0]['name'] . '"><br></div>';
   }
 
   //album that song came from
   if ($type == "song"){
     echo '<label for="album" class="col-sm-2 control-label">Album Name</label>
-<div class="col-sm-10">
-<input type="text" name="albumname" class="form-control" value="' . $albumname . '"><br></div>';
+      <div class="col-sm-10">
+      <input type="text" name="albumname" class="form-control" value="' . $albumname . '"><br></div>';
   }
 
   echo '<label for="description" class="col-sm-2 control-label">Description</label>
-<div class="col-sm-10">
-<textarea rows="4" cols="50" class="form-control" name="description">' . $description . '</textarea><br></div>';
+    <div class="col-sm-10">
+    <textarea rows="4" cols="50" class="form-control" name="description">' . $description . '</textarea><br></div>';
+
+  //songs for an album
+  if ($type == "album"){
+    $albumarray = getAlbumSongsAsArray($dbh,$mid,$page);
+    if($albumarray != null) {
+      echo '<label for="deletesong" class="col-sm-2 control-label">Delete Songs</label>';
+      $counter = 0;
+      foreach ($albumarray as $key => $value) {
+        if ($counter !=0){
+          echo '<label for="deletesong" class="col-sm-2 control-label"></label>';
+        }
+          echo '<div class="col-sm-10"><h4>' . $value['title'] . '</h4></div>';
+          echo '<label for="deletesong" class="col-sm-2 control-label"></label>';
+          echo '<div class="col-sm-10"> <input type="checkbox" float="left" class="form-control" name="song' . $counter . '" value="' . $value['mid'] . '"></div><br>';
+          $counter++;
+      }
+    }
+
+    echo '<label for="addsongs" class="col-sm-2 control-label">Add Songs</label><div class="col-sm-10"> <table id="songTable" style="width:60%;" class="table">
+        <tr><th>Song</th></tr>';
+    for ($counter = 1; $counter <= 5; $counter++){
+      echo '<tr><td><input type="text" style="width:80%;" class="form-control" name="newsong' . $counter . '"></td></tr>';
+    }
+    echo '</table></div><label for="addRowSong" class="col-sm-2 control-label"></label>
+      <div class="col-10-sm"><button class="btn btn-default" id="add_row_song">Add Row</button><br><br></div>';
+
+  }
 
   //actors
   if ($type == "movie" or $type == "tv"){
     if($contributionarray != null) {
-    echo '<label for="deleteactor" class="col-sm-2 control-label">Delete Actors</label>';
-    $counter = 0;
-    foreach ($contributionarray as $key => $value) {
-      if ($counter !=0){
-        echo '<label for="deleteactor" class="col-sm-2 control-label"></label>';
+      echo '<label for="deleteactor" class="col-sm-2 control-label">Delete Actors</label>';
+      $counter = 0;
+      foreach ($contributionarray as $key => $value) {
+        if ($counter !=0){
+          echo '<label for="deleteactor" class="col-sm-2 control-label"></label>';
+        }
+          echo '<div class="col-sm-10"><h4>' . $value['name'] . '</h4></div>';
+          echo '<label for="deleteactor" class="col-sm-2 control-label"></label>';
+          echo '<div class="col-sm-10"> <input type="checkbox" float="left" class="form-control" name="actor' . $counter . '" value="' . $value['pid'] . '"></div><br>';
+          $counter++;
       }
-        echo '<div class="col-sm-10"><h4>' . $value['name'] . '</h4></div>';
-        echo '<label for="deleteactor" class="col-sm-2 control-label"></label>';
-        echo '<div class="col-sm-10"> <input type="checkbox" float="left" class="form-control" name="actor' . $counter . '" value="' . $value['pid'] . '"></div><br>';
-        $counter++;
-    }
     }
 
     echo '<label for="addactors" class="col-sm-2 control-label">Add Actors</label><div class="col-sm-10"> <table id="actorTable" style="width:60%;" class="table">
-  <tr><th>Actor</th></tr>';
+        <tr><th>Actor</th></tr>';
     for ($counter = 1; $counter <= 5; $counter++){
-      echo '<tr><td><input type="text" style="width:40%;" class="form-control" name="newactor' . $counter . '"></tr></td>';
+      echo '<tr><td><input type="text" style="width:80%;" class="form-control" name="newactor' . $counter . '"></td></tr>';
     }
+    echo '</table></div><label for="addRowActor" class="col-sm-2 control-label"></label>
+      <div class="col-10-sm"><button class="btn btn-default" id="add_row_actor">Add Row</button><br><br></div>';
   }
-  echo '</table></div>
-<label for="addRowActor" class="col-sm-2 control-label"></label>
-<div class="col-10-sm">
-  <button class="btn btn-default" id="add_row_actor">Add Row</button><br><br>
-</div><label for="submitting" class="col-sm-2 control-label"></label><div class="col-10-sm">';
-  echo '<input type="submit" value="Make Changes" class="btn btn-default"></div></form></div>';
+  echo '<label for="submitting" class="col-sm-2 control-label"></label><div class="col-10-sm">
+    <input type="submit" value="Make Changes" class="btn btn-default"></div></form></div>';
 }
 
 checkLogInStatus();   
@@ -581,6 +623,7 @@ if (isset($_REQUEST['mid'])){
       $mid = htmlspecialchars($_REQUEST['mid']);
 
       $mediaarray1 = getMedia($mid,$dbh);
+      $albumarray = getAlbumSongsAsArray($dbh,$mid,$page);
 
       $title = htmlspecialchars($_REQUEST['title']);
       if ($title == ""){
@@ -600,20 +643,27 @@ if (isset($_REQUEST['mid'])){
       $artist = null;
       $deleteactorarray = null;
       $addactorarray = null;
+      $deletesongarray = null;
+      $addsongarray = null;
 
-      if ($type == "song" and htmlspecialchars($_REQUEST['albumname']) != ""){
-        $albumname = htmlspecialchars($_REQUEST['albumname']);
-      }
-      else{
-        $albumname = $mediaarray1['albumname'];
+      if ($type == "song"){
+        if (htmlspecialchars($_REQUEST['albumname']) != ""){
+          $albumname = htmlspecialchars($_REQUEST['albumname']);
+        }
+        else{
+         $albumname = $mediaarray1['albumname'];
+        }
       }
 
-      if (($type == "song" or $type == "album") and htmlspecialchars($_REQUEST['artist']) != ""){
-        $artist = htmlspecialchars($_REQUEST['artist']);
+      if ($type == "song" or $type == "album"){
+        if (htmlspecialchars($_REQUEST['artist']) != ""){
+          $artist = htmlspecialchars($_REQUEST['artist']);
+        }
+        else{
+          $artist = $mediaarray1['contributionarray'][0]['name'];
+        }
       }
-      else{
-        $artist = $mediaarray1['contributionarray'][0]['name'];
-      }
+
       if ($type == "tv" or $type == "movie"){
         $counter = 0;
         $deleteactorarray = array();
@@ -623,7 +673,6 @@ if (isset($_REQUEST['mid'])){
          }
           $counter++;
         }
-
         $addactorarray = array();
         $counter = 1;
         while (isset($_REQUEST['newactor' . $counter]) and htmlspecialchars($_REQUEST['newactor' . $counter]) != ""){
@@ -632,7 +681,24 @@ if (isset($_REQUEST['mid'])){
         }
       }
 
-      editMedia($uid, $mid, $title, $type, $genre, $length, $artist, $albumname, $deleteactorarray, $addactorarray, $description);
+      if ($type == "album"){
+        $counter = 0;
+        $deletesongarray = array();
+        for ($i=0; $i < count($albumarray); $i++) { 
+          if (isset($_REQUEST['song' . $counter])){
+           $deletesongarray[$counter] = htmlspecialchars($_REQUEST['song' . $counter]);
+         }
+          $counter++;
+        }
+        $addsongarray = array();
+        $counter = 1;
+        while (isset($_REQUEST['newsong' . $counter]) and htmlspecialchars($_REQUEST['newsong' . $counter]) != ""){
+          $addsongarray[$counter] = htmlspecialchars($_REQUEST['newsong' . $counter]);
+          $counter++;
+        }
+      }
+
+      editMedia($uid, $mid, $title, $type, $genre, $length, $artist, $albumname, $deleteactorarray, $addactorarray, $description, $deletesongarray, $addsongarray);
     }
 
     $artistarray = getAlbumSongContributions($dbh,$pagemid);
@@ -662,7 +728,14 @@ $(document).ready(function (){
     console.log("It got here!");
     e.preventDefault();
     var nextCount = $("#actorTable tr").length;
-    $("#actorTable tr:last").after('<tr><td><input type="text" style="width:40%;" class="form-control" name="newactor' + nextCount + '"></tr></td>');
+    $("#actorTable tr:last").after('<tr><td><input type="text" style="width:80%;" class="form-control" name="newactor' + nextCount + '"></td></tr>');
+  })
+
+  $("#add_row_song").click(function (e) {
+    console.log("It got here!");
+    e.preventDefault();
+    var nextCount = $("#songTable tr").length;
+    $("#songTable tr:last").after('<tr><td><input type="text" style="width:80%;" class="form-control" name="newsong' + nextCount + '"></td></tr>');
   })
 });
 </script>

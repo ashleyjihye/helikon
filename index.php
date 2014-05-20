@@ -1,12 +1,14 @@
-<!-- Ashley Thomas and Sasha Levy
+<?php
+
+/*
+Ashley Thomas and Sasha Levy
   Helikon
   adddata.php
   5/19/14
 
 This is basically the login/signup page.
- -->
+*/
 
- <?php
 
 require_once("MDB2.php");
 require_once("/home/cs304/public_html/php/MDB2-functions.php");
@@ -133,7 +135,6 @@ display:none;
 	<section id="intro" data-speed="6" data-type="background">
 		<div class="container">
 			<div class="row-fluid">
-	    
 	    	</div>
 	    
 	    </div>

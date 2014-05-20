@@ -353,8 +353,7 @@ function addMedia($dbh, $title, $type, $genre, $length, $uid, $albumid, $descrip
 }
 
 //handles all editing media cases, with new artist, genre, length, title, new contributions, etc...
-function editMedia($uid, $mid, $title, $type, $genre, $length, $artist, $albumname, $deleteactorarry, $addactorarray, $description){
-
+function editMedia($uid, $mid, $title, $type, $genre, $length, $artist, $albumname, $deleteactorarry, $addactorarray, $description, $deletesongarray, $addsongarray){
   global $dbh;
   echo '<div id="results" style="display: none;">'; //some of these methods below print out, and we don't want to display these to the user
 
@@ -366,8 +365,8 @@ function editMedia($uid, $mid, $title, $type, $genre, $length, $artist, $albumna
   $findperson = "select * from person where name = ?";
   $findcontribution = "select * from contribution where pid = ? and mid = ?";
   $findmediausingpid = "select mid, pid, genre from media inner join contribution using (mid) where title = ? and type = ? and pid = ?";
-
-
+  $changealbumid = "update media set albumid = ? where mid = ?";
+  $deletecontribution1 = "delete from contribution where mid = ? and pid = ?";
   $update = "update media set title = ?, type = ?, genre = ?, length = ?, description = ? where mid = ?";
   $values = array($title, $type, $genre, $length, $description, $mid,);
   $updatemedia = prepared_statement($dbh, $update, $values);
@@ -395,17 +394,34 @@ function editMedia($uid, $mid, $title, $type, $genre, $length, $artist, $albumna
 
   if ($type == "tv" or $type == "movie"){ //delete and add actors
     foreach ($deleteactorarry as $key => $value) {
-      echo "$value";
-      $deletecontribution1 = "delete from contribution where mid = ? and pid = ?";
       $delete = prepared_statement($dbh, $deletecontribution1, array($mid,$value));
     }
     foreach ($addactorarray as $key => $value) {
       $artistid = addPerson($dbh, $value, $uid, null, $findperson, $person);
       addContribution($dbh, $mid, $artistid, $title, $value, $findcontribution, $contribution);
     }
-
   }
   echo "</div>";
+  if ($type == "album"){
+    foreach ($deletesongarray as $key => $value){
+      prepared_statement($dbh,$getridofalbumid,array(null,$value));
+    }
+    foreach ($addsongarray as $key => $value){
+      $findthesong = prepared_query($dbh,$findmediawithtype,array($value,"song"));
+      $numRows = $findthesong -> numRows();
+      if ($numRows == 1){
+        $row = $findthesong->fetchRow(MDB2_FETCHMODE_ASSOC);
+        $songmid = $row['mid'];
+        $findthecontribution = prepared_query($dbh,$findcontribution,array($artistid,$songmid));
+        $numRows = $findthecontribution -> numRows();
+        if ($numRows == 1){
+          echo "woohoo!";
+          $changetheid = prepared_query($dbh,$changealbumid,array($mid,$songmid));
+        }
+      }
+    }
+  }
+//  echo "</div>";
 }
 
 //same as above, but for people

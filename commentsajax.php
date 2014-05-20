@@ -1,12 +1,13 @@
-<!-- Ashley Thomas and Sasha Levy
+<?php
+
+/*
+Ashley Thomas and Sasha Levy
   Helikon
   commentsajax.php
   5/19/14
 
 This file handles the ajax request in order to post comments dynamically
- -->
-
-<?php
+ */
 
 require_once("MDB2.php");
 require_once("/home/cs304/public_html/php/MDB2-functions.php");

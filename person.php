@@ -222,7 +222,7 @@ $(document).ready(function (){
     console.log("It got here!");
     e.preventDefault();
     var nextCount = $("#mediaTable tr").length;
-    $("#mediaTable tr:last").after('<tr><td><input type="text" style= "width: 40%;" class="form-control"name="newmedia' + nextCount + '"></td><td><select style="width:100px;" class="form-control" name="newmediatype' + nextCount + '" id="newmediatype><option selected="selected" value="">None<option value="movie">Movie<option value="tv">TV</select></td></tr>');
+    $("#mediaTable tr:last").after('<tr><td><input type="text" style= "width: 80%;" class="form-control"name="newmedia' + nextCount + '"></td><td><select style="width:100px;" class="form-control" name="newmediatype' + nextCount + '" id="newmediatype><option selected="selected" value="">None<option value="movie">Movie<option value="tv">TV</select></td></tr>');
   })
 });
 </script>

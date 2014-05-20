@@ -1,13 +1,14 @@
-<!-- Ashley Thomas and Sasha Levy
+<?php
+
+/*
+Ashley Thomas and Sasha Levy
   Helikon
   adddata.php
   5/19/14
 
 This file allows the user to insert data into the database. It includes a lot of forms,
 including forms to enter an album or song, tv show or movie, and person
- -->
-
-<?php
+*/
 
 require_once("MDB2.php");
 require_once("/home/cs304/public_html/php/MDB2-functions.php");
